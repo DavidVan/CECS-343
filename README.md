@@ -5,3 +5,6 @@ Members:
 Ryan Ea
 Mark Spencer Tan
 David Van
+
+Usage:
+Initialize repository: drm init

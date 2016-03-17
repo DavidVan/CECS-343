@@ -21,13 +21,13 @@ SET (INCLUDE
 )
 
 # Define Where Header Files Are Located
-#SET (INC
-#    ${INC_DIR}/Add.h
-#)
+SET (INC
+    ${INC_DIR}/Repository.h
+)
 
 # Define Where Source Files Are Located
 SET (SRC
-#    ${SRC_DIR}/Add.cpp
+    ${SRC_DIR}/Repository.cpp
     ${SRC_DIR}/main.cpp
 )
 

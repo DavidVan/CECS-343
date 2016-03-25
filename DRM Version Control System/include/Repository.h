@@ -11,7 +11,7 @@ private:
     void CreateRepository(const std::string);
     void CreateProjectTree();
     std::string CheckSum(std::string);
-    int PathType(std::string);
+    void CreateManifest();
 
 public:
     Repository();

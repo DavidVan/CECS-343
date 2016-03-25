@@ -1,7 +1,9 @@
 #include <iostream>
 #include <string>
 #include <experimental\filesystem>
+#include <fstream>
 #include "Repository.h"
+
 
 using namespace std;
 namespace filesystem = std::experimental::filesystem;
@@ -14,18 +16,21 @@ Repository::Repository() {
         CreateRepository("repo343");
         cout << "Repository is created." << endl;
         CreateProjectTree();
+        CreateManifest();
     }
 }
 
 void Repository::CreateRepository(const string s) {
     // Create the directory.
     filesystem::create_directory(s);
+    filesystem::create_directory(s + "\\manifests");                 // Create Manifest Subdirectory
+
 }
 
 void Repository::CreateProjectTree() {
-    //grabs cd location
-    filesystem::path currentPath = filesystem::current_path(); 
-    
+
+    filesystem::path currentPath = filesystem::current_path();       //grabs cd location
+
     //for loop that extracts the current directory without the full path
     string currentDirectory;
     for (auto &p : currentPath) {
@@ -34,7 +39,6 @@ void Repository::CreateProjectTree() {
 
     //this is a recursive iterator that will go through all the files/folders of the cd
     for (auto &p : filesystem::recursive_directory_iterator(currentPath)) {
-        
         if (filesystem::is_regular_file(p)) {
             string path = p.path().string();                                           //string rep of referenced path
             int loc = path.find(currentDirectory) + currentDirectory.length();         //position of the cd name in the path
@@ -59,6 +63,25 @@ string Repository::CheckSum(string path) {
     return to_string(size);
 }
 
+void Repository::CreateManifest() {
+    ofstream output(".\\repo343\\manifests\\manfile.txt");   
+    char date[9];
+
+    // Initial Manifest file writing - path & time
+    output << "ProjectTree Path :" << filesystem::current_path() << endl;
+    output << "Check in date: " << _strdate(date) << endl;
+
+    //recursive directory iterator
+    output << "Ptree Files and Artifact IDs:\n" << endl;
+    for (auto &p : filesystem::recursive_directory_iterator(filesystem::current_path()/"repo343")) {
+        
+        if (filesystem::is_regular_file(p) && p.path().filename()!="manfile.txt") {
+            //prints filename alongside its artifact id. excludes the manfile.txt
+            output << p.path().parent_path().filename() <<" | AID: "<< p.path().filename() <<endl;
+        }
+    }
+    output.close();
+}
 
 
 

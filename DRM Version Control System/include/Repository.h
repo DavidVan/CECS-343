@@ -10,8 +10,8 @@ class Repository {
 private:
     void CreateRepository(const std::string);
     void CreateProjectTree();
-    int CheckSum(std::string);
-    int PathType(std::string);
+    std::string CheckSum(std::string);
+    void CreateManifest();
 
 public:
     Repository();

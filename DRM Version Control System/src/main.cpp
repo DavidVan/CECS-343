@@ -39,4 +39,6 @@ int main(int argc, char* argv[]) {
     Repository* repository = new Repository(); // Initialize repository.
 
     runCommand(argc, argv, repository);
+
+    return 0;
 }

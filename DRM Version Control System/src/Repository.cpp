@@ -16,8 +16,8 @@ Repository::Repository() {
     else {
         CreateRepository(mRepositoryFolderName); // Creates repository folder with name specified in header file.
         cout << "Repository created." << endl;
-        CreateProjectTree();
     }
+    CreateProjectTree();
     CreateManifest();
 }
 
@@ -37,6 +37,11 @@ void Repository::CreateProjectTree() {
     }
 
     for (auto &p : filesystem::recursive_directory_iterator(currentPath)) {
+        // We need to avoid adding our repositoy folder to our repository folder.
+        // We find if the directory we're in contains the repository folder name.
+        if (p.path().parent_path().string().find(mRepositoryFolderName) != string::npos) {
+            continue;
+        }
         //cout << p.path() << endl;
         if (filesystem::is_regular_file(p)) {
             string filePath = p.path().string(); // Location of where the repository is stored.
@@ -48,7 +53,6 @@ void Repository::CreateProjectTree() {
             filesystem::copy_file(filePath, destination, filesystem::copy_options::overwrite_existing); // Copies over the file to its respective repository folder.
         }
     }
-    filesystem::remove_all(mRepositoryFolderName + "\\" + mRepositoryFolderName); //removes duplicate repo folders due to recursion
 }
 
 void Repository::CreateManifest() {
@@ -70,7 +74,6 @@ void Repository::CreateManifest() {
 
     output << "Project tree Files and Artifact IDs:\n" << endl;
     for (auto &p : filesystem::recursive_directory_iterator(filesystem::current_path().string() + "//" + mRepositoryFolderName)) {
-
         if (filesystem::is_regular_file(p) && p.path().filename() != "manfile.txt") {
             //prints filename alongside its artifact id. excludes the manfile.txt
             output << p.path().parent_path().filename() << " | AID: " << p.path().filename() << endl;
@@ -81,5 +84,6 @@ void Repository::CreateManifest() {
 
 string Repository::CheckSum(string path) {
     filesystem::path p = filesystem::canonical(path);
-    return to_string(filesystem::file_size(p) %256);
+    cout << to_string(filesystem::file_size(p)) << endl;
+    return to_string(filesystem::file_size(p) % 256);
 }

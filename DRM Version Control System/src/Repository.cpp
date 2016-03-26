@@ -1,3 +1,5 @@
+#include <chrono>
+#include <ctime>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -15,8 +17,8 @@ Repository::Repository() {
         CreateRepository(mRepositoryFolderName); // Creates repository folder with name specified in header file.
         cout << "Repository created." << endl;
         CreateProjectTree();
-        CreateManifest();
     }
+    CreateManifest();
 }
 
 void Repository::CreateRepository(const string s) {
@@ -50,15 +52,22 @@ void Repository::CreateProjectTree() {
 }
 
 void Repository::CreateManifest() {
-    string manifestLocation = mRepositoryFolderName + "\\manifests\\manfile.txt";
+    // Grab date/time.
+    time_t time = chrono::system_clock::to_time_t(chrono::system_clock::now());
+    tm *clock = localtime(&time);
+    string dateString = "Check-in date: " + to_string(1 + clock->tm_mon) + "/" + to_string(clock->tm_mday) + "/" + to_string(1900 + clock->tm_year);
+    string dateStamp = to_string(1 + clock->tm_mon) + "-" + to_string(clock->tm_mday) + "-" + to_string(1900 + clock->tm_year);
+    string timeStamp = to_string(clock->tm_hour % 12) + "-" + to_string(clock->tm_min) + "-"
+        + (clock->tm_sec >= 10 ? to_string(clock->tm_sec) : "0" + to_string(clock->tm_sec)) + (clock->tm_hour >= 12 ? "pm" : "am");
+
+    // Open file for writing.
+    string manifestLocation = mRepositoryFolderName + "\\manifests\\" + dateStamp + " at " + timeStamp + ".txt";
     ofstream output(manifestLocation);
-    char date[9];
 
     // Initial Manifest file writing - path & time
     output << "Project Tree Path :" << filesystem::current_path() << endl;
-    output << "Check-in date: " << _strdate(date) << endl;
+    output << "Check-in date: " << dateString << endl;
 
-    //recursive directory iterator
     output << "Project tree Files and Artifact IDs:\n" << endl;
     for (auto &p : filesystem::recursive_directory_iterator(filesystem::current_path().string() + "//" + mRepositoryFolderName)) {
 
@@ -71,11 +80,6 @@ void Repository::CreateManifest() {
 }
 
 string Repository::CheckSum(string path) {
-    FILE *file = NULL;
-    fopen_s(&file, path.c_str(), "rb");  // opens file stream
-    fseek(file, 0, SEEK_END);            // sets the file pointer to end of file
-    int size = ftell(file);              // ftell gets the file size
-
-    fclose(file);                        // close stream and release buffer
-    return to_string(size);
+    filesystem::path p = filesystem::canonical(path);
+    return to_string(filesystem::file_size(p) %256);
 }

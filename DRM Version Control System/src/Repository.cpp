@@ -84,6 +84,5 @@ void Repository::CreateManifest() {
 
 string Repository::CheckSum(string path) {
     filesystem::path p = filesystem::canonical(path);
-    cout << to_string(filesystem::file_size(p)) << endl;
     return to_string(filesystem::file_size(p) % 256);
 }

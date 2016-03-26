@@ -9,9 +9,17 @@
 using namespace std;
 namespace filesystem = std::experimental::filesystem;
 
-Repository::Repository() {
+Repository::Repository() : mRepositoryFolderName("repo343") {
+
+}
+
+Repository::~Repository() {
+
+}
+
+void Repository::Initialize() {
     if (filesystem::exists(mRepositoryFolderName)) {
-        cout << "Repository already exists" << endl;
+        cout << "Repository already exists. Updating manifests. This will be changed later."<< endl;
     }
     else {
         CreateRepository(mRepositoryFolderName); // Creates repository folder with name specified in header file.
@@ -28,7 +36,7 @@ void Repository::CreateRepository(const string s) {
     filesystem::create_directory(s + "\\manifests");
 }
 
-void Repository::CreateProjectTree() {
+void Repository::CreateProjectTree() const {
 
     filesystem::path currentPath = filesystem::current_path();
     string currentDirectory;
@@ -36,10 +44,14 @@ void Repository::CreateProjectTree() {
         currentDirectory = p.string();
     }
 
+    // This will be the current path of the repository.
+    string repositoryPath =  currentPath.string() + "\\" + mRepositoryFolderName;
+    
     for (auto &p : filesystem::recursive_directory_iterator(currentPath)) {
         // We need to avoid adding our repositoy folder to our repository folder.
         // We find if the directory we're in contains the repository folder name.
-        if (p.path().parent_path().string().find(mRepositoryFolderName) != string::npos) {
+
+        if (p.path().parent_path().string().find(repositoryPath) != string::npos) {
             continue;
         }
         //cout << p.path() << endl;
@@ -55,7 +67,7 @@ void Repository::CreateProjectTree() {
     }
 }
 
-void Repository::CreateManifest() {
+void Repository::CreateManifest() const {
     // Grab date/time.
     time_t time = chrono::system_clock::to_time_t(chrono::system_clock::now());
     tm *clock = localtime(&time);
@@ -82,7 +94,7 @@ void Repository::CreateManifest() {
     output.close();
 }
 
-string Repository::CheckSum(string path) {
+const string Repository::CheckSum(const string path) const {
     filesystem::path p = filesystem::canonical(path);
     return to_string(filesystem::file_size(p) % 256);
 }

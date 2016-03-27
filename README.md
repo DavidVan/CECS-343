@@ -1,10 +1,16 @@
-CECS 343 Project - Version Control System - Phase One
+CECS 343, Section 05/06
+Project: Version Control System - Phase One
 Project By: Team DRM
 
 Members:
-Ryan Ea, Mark Spencer Tan, David Van
+Ryan Ea: helloxhi1@gmail.com
+Mark Spencer Tan: msgtan@gmail.com
+David Van: David@DavidVan.net
+
+--------------------------------------------------------------------------------
 
 Usage:
+
 Initialize repository: drm init
 
 --------------------------------------------------------------------------------
@@ -42,3 +48,14 @@ sudo make
 To run the program, go inside the "bin" folder, and move the executable named
 "drm" to the root folder of where you want to create a repository. Then in a
 terminal/cmd, type "drm init".
+
+--------------------------------------------------------------------------------
+
+BUGS:
+
+Manifests creation is working, but only at a very basic level. You will
+have to run "drm init" again to update the manifests file. In the future,
+we would like to create a class handling all Manifests file creation and
+additions. This way, we can implement stuff like "drm add" correctly.
+
+--------------------------------------------------------------------------------

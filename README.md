@@ -32,10 +32,12 @@ Have Visual Studio 2015 Installed.
 
 Enter these commands:
 
-'''cmake -G "Visual Studio 14 2015"
+```
+cmake -G "Visual Studio 14 2015"
 cmake --build . --target ALL_BUILD --config Release
 <--OR-->
-Open "drm.sln" and build inside Visual Studio.'''
+Open "drm.sln" and build inside Visual Studio.
+```
 
 --------------------------------------------------------------------------------
 
@@ -45,8 +47,10 @@ Have GCC 5.3 or above.
 
 Enter these commands:
 
-'''cmake -G "Unix Makefiles"
-sudo make'''
+```
+cmake -G "Unix Makefiles"
+sudo make
+```
 
 --------------------------------------------------------------------------------
 

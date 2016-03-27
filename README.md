@@ -67,4 +67,11 @@ have to run "drm init" again to update the manifests file. In the future,
 we would like to create a class handling all Manifests file creation and
 additions. This way, we can implement stuff like "drm add" correctly.
 
+Another bug involves compiling on Linux. If you get past the CMake instructions,
+and actually compile the program, when you run it, the program doesn't work
+properly. This is due to the experimental nature of the filesystem library.
+Each compiler has to implement its own version of the filesystem library, and
+then have it work across different operating systems. It's hard. Our code should
+theoretically work across all major operating systems.
+
 --------------------------------------------------------------------------------

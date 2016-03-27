@@ -32,9 +32,9 @@ SET (SRC
 )
 
 # Check to see if we're using the G++ compiler
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND ${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" AND ${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -v -std=c++1z")
-    target_link_libraries(${PROJNAME} -lstdc++fs)
+    target_link_libraries(${PROJECT_NAME} -lstdc++fs)
 endif()
 
 # Include The Directories

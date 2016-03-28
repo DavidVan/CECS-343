@@ -28,7 +28,7 @@ Initialize repository: drm init
 
 --------------------------------------------------------------------------------
 
-Building Instructions:
+Building Instructions and External Dependencies:
 
 Have CMake 3.5.0 or higher installed.
 

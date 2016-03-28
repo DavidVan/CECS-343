@@ -75,6 +75,11 @@ have to run "drm init" again to update the manifests file. In the future,
 we would like to create a class handling all Manifests file creation and
 additions. This way, we can implement stuff like "drm add" correctly.
 
+There is also something that looks like a bug, but isn't. When creating Artifact
+IDs (using the CheckSum method), it seems like the Artifact ID is always zero.
+This is just a coincidence. We take the file size and use the modulus operator
+on it. It's filesize % 256.
+
 Another bug involves compiling on Linux. If you get past the CMake instructions,
 and actually compile the program, when you run it, the program doesn't work
 properly. This is due to the experimental nature of the filesystem library.

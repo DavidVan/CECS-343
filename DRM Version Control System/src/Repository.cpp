@@ -71,7 +71,7 @@ void Repository::CreateManifest() const {
     // Grab date/time.
     time_t time = chrono::system_clock::to_time_t(chrono::system_clock::now());
     tm *clock = localtime(&time);
-    string dateString =to_string(1 + clock->tm_mon) + "/" + to_string(clock->tm_mday) + "/" + to_string(1900 + clock->tm_year);
+    string dateString = to_string(1 + clock->tm_mon) + "/" + to_string(clock->tm_mday) + "/" + to_string(1900 + clock->tm_year);
     string dateStamp = to_string(1 + clock->tm_mon) + "-" + to_string(clock->tm_mday) + "-" + to_string(1900 + clock->tm_year);
     string timeStamp = to_string(clock->tm_hour % 12) + "-" + to_string(clock->tm_min) + "-"
         + (clock->tm_sec >= 10 ? to_string(clock->tm_sec) : "0" + to_string(clock->tm_sec)) + (clock->tm_hour >= 12 ? "pm" : "am");
@@ -82,7 +82,7 @@ void Repository::CreateManifest() const {
 
     // Initial Manifest file writing - path & time
     output << "Project Tree Path :" << filesystem::current_path() << endl;
-    output << "Check-in date: " << dateString <<  "  time: " << timeStamp << endl;
+    output << "Check-in Date: " << dateString << "  Time: " << timeStamp << endl;
     output << "Previous Manifest: None" << endl;
 
     filesystem::path currentPath = filesystem::current_path();
@@ -94,10 +94,10 @@ void Repository::CreateManifest() const {
     output << "Project tree Files and Artifact IDs:\n" << endl;
     for (auto &p : filesystem::recursive_directory_iterator(filesystem::current_path())) {
         string path = p.path().string();
-        if (path.find(mRepositoryFolderName) == string::npos) { //will exclude paths with the repo name in the output 
+        if (path.find(mRepositoryFolderName) == string::npos) { // This will exclude paths with the repo name in the output. 
             output << path.substr(path.find(currentDirectory));
             if (filesystem::is_regular_file(p)) {
-                output << "\t| AID: " << CheckSum(p.path().string());
+                output << " | Artifact ID: " << CheckSum(p.path().string());
             }
             output << endl;
         }

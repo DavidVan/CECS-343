@@ -19,7 +19,7 @@ Repository::~Repository() {
 
 void Repository::Initialize() {
     if (filesystem::exists(mRepositoryFolderName)) {
-        cout << "Repository already exists. Updating manifests. This will be changed later."<< endl;
+        cout << "Repository already exists. Updating manifests. This will be changed later." << endl;
     }
     else {
         CreateRepository(mRepositoryFolderName); // Creates repository folder with name specified in header file.
@@ -45,8 +45,8 @@ void Repository::CreateProjectTree() const {
     }
 
     // This will be the current path of the repository.
-    string repositoryPath =  currentPath.string() + "\\" + mRepositoryFolderName;
-    
+    string repositoryPath = currentPath.string() + "\\" + mRepositoryFolderName;
+
     for (auto &p : filesystem::recursive_directory_iterator(currentPath)) {
         // We need to avoid adding our repositoy folder to our repository folder.
         // We find if the directory we're in contains the repository folder name.

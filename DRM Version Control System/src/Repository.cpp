@@ -2,6 +2,7 @@
 #include <ctime>
 #include <iostream>
 #include <fstream>
+#include <vector>
 #include <string>
 #include <experimental\filesystem>
 #include "Repository.h"
@@ -27,6 +28,12 @@ void Repository::Initialize() {
     }
     CreateProjectTree();
     CreateManifest();
+}
+void Repository::CheckIn( string src, string target) {
+	cout << "src: " << src << endl << "target: " << target << endl;
+}
+void Repository::CheckOut( string src, string target) {
+	cout << GetPrevManifest() << endl;
 }
 
 void Repository::CreateRepository(const string s) {
@@ -54,7 +61,6 @@ void Repository::CreateProjectTree() const {
         if (p.path().parent_path().string().find(repositoryPath) != string::npos) {
             continue;
         }
-        //cout << p.path() << endl;
         if (filesystem::is_regular_file(p)) {
             string filePath = p.path().string(); // Location of where the repository is stored.
             int cutOffLocation = filePath.find(currentDirectory) + currentDirectory.length(); // Total length of path containing repository.
@@ -67,23 +73,18 @@ void Repository::CreateProjectTree() const {
     }
 }
 
-void Repository::CreateManifest() const {
-    // Grab date/time.
-    time_t time = chrono::system_clock::to_time_t(chrono::system_clock::now());
-    tm *clock = localtime(&time);
-    string dateString =to_string(1 + clock->tm_mon) + "/" + to_string(clock->tm_mday) + "/" + to_string(1900 + clock->tm_year);
-    string dateStamp = to_string(1 + clock->tm_mon) + "-" + to_string(clock->tm_mday) + "-" + to_string(1900 + clock->tm_year);
-    string timeStamp = to_string(clock->tm_hour % 12) + "-" + to_string(clock->tm_min) + "-"
-        + (clock->tm_sec >= 10 ? to_string(clock->tm_sec) : "0" + to_string(clock->tm_sec)) + (clock->tm_hour >= 12 ? "pm" : "am");
+void Repository::CreateManifest() const{
+	const vector<string> date = DateStamp();
+	string dateString = date[1];
 
     // Open file for writing.
-    string manifestLocation = mRepositoryFolderName + "\\manifests\\" + dateStamp + " at " + timeStamp + ".txt";
+    string manifestLocation = mRepositoryFolderName + "\\manifests\\" + dateString + ".txt";
     ofstream output(manifestLocation);
 
     // Initial Manifest file writing - path & time
     output << "Project Tree Path :" << filesystem::current_path() << endl;
-    output << "Check-in date: " << dateString <<  "  time: " << timeStamp << endl;
-    output << "Previous Manifest: None" << endl;
+	output << "Check-in date: " << dateString <<endl;
+    output << "Previous Manifest: "  << (GetPrevManifest().compare(dateString+".txt")==0 ? "none" : GetPrevManifest()) << endl;
 
     filesystem::path currentPath = filesystem::current_path();
     string currentDirectory;
@@ -108,4 +109,37 @@ void Repository::CreateManifest() const {
 const string Repository::CheckSum(const string path) const {
     filesystem::path p = filesystem::canonical(path);
     return to_string(filesystem::file_size(p) % 256);
+}
+
+
+const vector<string> Repository::DateStamp() const{
+	// Grab date/time.  
+	vector<std::string> date;
+	time_t time = chrono::system_clock::to_time_t(chrono::system_clock::now());
+	tm *clock = localtime(&time);
+	string dateStamp = to_string(1900 + clock->tm_year) + (1 + clock->tm_mon >= 10 ? to_string( 1 + clock->tm_mon) : "0" + to_string( 1+ clock->tm_mon)) + 
+		(clock->tm_mday >= 10 ? to_string(clock->tm_mday) : "0" + to_string(clock->tm_mday));
+	string timeStamp = (clock->tm_hour >= 10 ? to_string(clock->tm_hour) : "0" + to_string(clock->tm_hour)) +
+						(clock->tm_min >= 10 ? to_string(clock->tm_min) : "0" + to_string(clock->tm_min)) + 
+						(clock->tm_sec >= 10 ? to_string(clock->tm_sec) : "0" + to_string(clock->tm_sec));
+	string datetime = dateStamp + timeStamp;
+	string sDate = to_string(1 + clock->tm_mon) + "/" + to_string(clock->tm_mday) + "/" + to_string(1900 + clock->tm_year) +
+					" time: " + to_string(clock->tm_hour % 12) + ":" + to_string(clock->tm_min) + ":" +
+					to_string(clock->tm_sec) + (clock->tm_hour >= 12 ? "pm" : "am");
+	
+	date.push_back(sDate);	   //vector[0] returns toString rep of  full date & time.
+	date.push_back(datetime);  //vector[1] returns date and time stamp for manifests.
+	date.push_back(dateStamp); //vector[2] returns date
+	date.push_back(timeStamp); // vector[3] returns time
+	return date;
+}
+
+//Retrieves the name of the previous manifest file.
+const string Repository::GetPrevManifest() const {
+	string latest = "none"; 
+	for (auto& p : filesystem::directory_iterator(mRepositoryFolderName + "\\manifests\\")) {
+		if (std::atoi(p.path().filename().string().c_str()) > std::atoi(latest.c_str()))
+			latest = p.path().filename().string();
+	}
+	return latest;
 }

@@ -21,6 +21,12 @@ void runCommand(int argc, char* argv[], Repository* repository) {
     if (string(argv[1]) == "init") {
         repository->Initialize();
     }
+	else if (string(argv[1]) == "checkin") {
+		repository->CheckIn(argv[2], argv[3]);
+	}
+	else if (string(argv[1]) == "checkout") {
+		repository->CheckOut(argv[2], argv[3]);
+	}
     else if (string(argv[1]) == "add") {
         // Do something
     }

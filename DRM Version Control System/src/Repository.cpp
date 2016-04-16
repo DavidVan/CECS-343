@@ -66,6 +66,7 @@ void Repository::CheckIn(string src, string target) {
     }
     CreateManifest(); // updates manifest file
 }
+
 void Repository::CheckOut(string src, string target) {
     cout << GetPrevManifest() << endl;
 }
@@ -82,7 +83,6 @@ void Repository::CreateProjectTree() const {
     filesystem::path currentPath = filesystem::current_path();
     // name of the directory you cd into
     string currentDirectoryName = currentPath.filename().string();
-
     // This will be the current path of the repository.
     string repositoryPath = currentPath.string() + "\\" + mRepositoryFolderName;
 
@@ -117,7 +117,6 @@ void Repository::CreateManifest() const {
     output << "Previous Manifest: " << (GetPrevManifest().compare(dateString + ".txt") == 0 ? "none" : GetPrevManifest()) << endl;
 
     string currentDirectoryName = filesystem::current_path().filename().string();
-
     output << "Project tree Files and Artifact IDs:\n" << endl;
     for (auto &p : filesystem::recursive_directory_iterator(filesystem::current_path())) {
         string path = p.path().string();
@@ -190,6 +189,7 @@ void Repository::PrintStructure(ofstream os, string dir) {
 
     }
 }
+
 void Repository::PrintStructure(ofstream os, filesystem::path dir, int depth) {
 
 }

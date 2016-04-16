@@ -13,7 +13,7 @@ void commandList() {
 }
 
 void runCommand(int argc, char* argv[], Repository* repository) {
-    if (argc == 1) {
+	if (argc == 1) {
         commandList();
         return;
     }

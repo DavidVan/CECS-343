@@ -32,58 +32,14 @@ void Repository::Initialize() {
 }
 
 /*
-@Param: src = project tree folder
-check in will update repository folder with new files/folders from the project tree directory.
-Manifest will be updated as well.
-*/
-void Repository::CheckIn(string src) {
-    string target = filesystem::current_path().string() + "\\" + mRepositoryFolderName;
-    for (auto &p : filesystem::recursive_directory_iterator(src)) { // Go through the project tree folder and check for updated/new files.
-        string  filePath = p.path().string();
-        if (filesystem::is_regular_file(p)) {
-            if (filePath.find(mRepositoryFolderName) == string::npos) {	// Excludes the project tree's repository folder from the iteration.
-                bool isNewFile = true;
-                for (auto &r : filesystem::recursive_directory_iterator(target)) { // Iterates through the repository folder
-                    if (filesystem::is_directory(r)) {
-                        string test1 = GetFileLocation(src, p.path().string());
-                        string test2 = GetFileLocation(target, r.path().string());
-                        if (GetFileLocation(src, p.path().string()).compare(GetFileLocation(target, r.path().string())) == 0) { // File already exists in repository. Update repository with project tree's version.
-                            isNewFile = false;
-                            string artifact = r.path().string() + "\\" + CheckSum(filePath);  // the theoretical file path of the updated file's artifact
-                            if (!filesystem::exists(artifact)) { // If this file does not exist in the repository...
-                                string repositoryProjectTreeFileLocation = r.path().parent_path().parent_path().string() + GetFileLocation(src, filePath); // Location of where to place the file in repository's project tree
-                                filesystem::copy_file(filePath, artifact, filesystem::copy_options::overwrite_existing); // Copy it over to the repository.
-                                filesystem::copy_file(artifact, repositoryProjectTreeFileLocation, filesystem::copy_options::overwrite_existing); // Now copy it to repository's project tree.
-                                cout << "File updated: " << p.path().filename() << endl;
-                                break; // Finished copying. Break out.
-                            }
-                        }
-                    }
-                }
-                // new file is found. create a new subdirectory and new artifact in the repo
-                if (isNewFile) {
-                    string newFilePath = GetRepoPath(src, target, filePath);
-                    filesystem::path path = newFilePath;
-                    string repositoryProjectTreeFileLocation = path.parent_path().parent_path().string() + GetFileLocation(src, filePath); // Location of where to place the file in repository's project tree
-                    filesystem::create_directories(newFilePath); // Create folders for the files in the repository.
-                    newFilePath = newFilePath + "\\" + CheckSum(filePath); // Update filepath to include checksum. This will rename the file to that checksum.
-                    filesystem::copy_file(filePath, newFilePath); // Copies over the file to its respective repository folder.
-                    filesystem::copy_file(newFilePath, repositoryProjectTreeFileLocation); // Now copy it to repository's project tree.
-                    cout << "New File is added to the repo: " << p.path().filename() << endl;
-                    break; // Finish copying. Break out.
-                }
-            }
-        }
-    }
-    CreateManifest(); // updates manifest file
-}
-
-/*
 @Param: src = project tree folder ; target = repository folder
 check in will update repository folder with new files/folders from the project tree directory.
 Manifest will be updated as well.
 */
 void Repository::CheckIn(string src, string target) {
+    if (target == "") {
+        target = filesystem::current_path().string() + "\\" + mRepositoryFolderName;
+    }
     for (auto &p : filesystem::recursive_directory_iterator(src)) { // Go through the project tree folder and check for updated/new files.
         string  filePath = p.path().string();
         if (filesystem::is_regular_file(p)) {

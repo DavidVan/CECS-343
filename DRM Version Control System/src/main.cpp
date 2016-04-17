@@ -23,7 +23,7 @@ void runCommand(int argc, char* argv[], Repository* repository) {
     }
 	else if (string(argv[1]) == "checkin") {
         if (argv[3] == nullptr) {
-            repository->CheckIn(argv[2]);
+            repository->CheckIn(argv[2], "");
         }
         else {
             repository->CheckIn(argv[2], argv[3]);

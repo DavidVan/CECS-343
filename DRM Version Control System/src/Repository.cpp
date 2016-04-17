@@ -58,7 +58,7 @@ void Repository::CheckIn(string src, string target) {
                     string newFilePath = GetRepoPath(p.path().string());
                     filesystem::create_directories(newFilePath); // Create folders for the files in the repository.
                     newFilePath = newFilePath + "\\" + CheckSum(filePath); // Update filepath to include checksum. This will rename the file to that checksum.
-                    filesystem::copy_file(filePath, newFilePath); // Copies over the file to its respective repository folder.
+                    filesystem::copy_file(filePath, newFilePath, filesystem::copy_options::overwrite_existing); // Copies over the file to its respective repository folder.
                     cout << "New File is added to the repo: " << p.path().filename() << endl;
                 }
             }
@@ -98,7 +98,7 @@ void Repository::CreateProjectTree() const {
             string destination = GetRepoPath(filePath);
             filesystem::create_directories(destination); // Create folders for the files in the repository.
             destination = destination + "\\" + CheckSum(filePath); // Update destination to include checksum. This will rename the file to that checksum.
-            filesystem::copy_file(filePath, destination); // Copies over the file to its respective repository folder.
+            filesystem::copy_file(filePath, destination, filesystem::copy_options::overwrite_existing); // Copies over the file to its respective repository folder.
         }
     }
 }

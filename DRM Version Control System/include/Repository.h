@@ -20,16 +20,15 @@ private:
 	const std::vector<std::string> DateStamp()const ;
 	const std::string GetPrevManifest() const ;
 	const std::string GetRepoPath(std::string , std::string, std::string) const ;
-	
 
 public:
     Repository();
     ~Repository();
     void Initialize();
-	void CheckIn(std::string, std::string);
-	void CheckOut(std::string, std::string);
-	void PrintStructure(std::ofstream, std::string);
-	void PrintStructure(std::ofstream, std::experimental::filesystem::path, int);
+    void CheckIn(std::string, std::string);
+    void CheckOut(std::string, std::string);
+    void PrintStructure(std::ofstream, std::string);
+    void PrintStructure(std::ofstream, std::experimental::filesystem::path, int);
 };
 
 #endif

@@ -20,7 +20,7 @@ Repository::~Repository() {
 
 void Repository::Initialize() {
     if (filesystem::exists(mRepositoryFolderName)) {
-        cout << "Repository already exists. Updating manifests. This will be changed later."<< endl;
+        cout << "Repository already exists. Updating manifests. This will be changed later." << endl;
     }
     else {
         CreateRepository(mRepositoryFolderName); // Creates repository folder with name specified in header file.
@@ -29,10 +29,11 @@ void Repository::Initialize() {
     CreateProjectTree();
     CreateManifest();
 }
-/* 
+
+/*
 @Param: src = project tree folder ; target = repository folder
 check in will update repository folder with new files/folders from the project tree directory.
-Manifest will be updated as well. 
+Manifest will be updated as well.
 */
 void Repository::CheckIn( string src, string target) {	
 	//iterate through ptree folder for files. 
@@ -64,9 +65,11 @@ void Repository::CheckIn( string src, string target) {
 		}
 	}
 	CreateManifest(); // updates manifest file
+
 }
-void Repository::CheckOut( string src, string target) {
-	cout << GetPrevManifest() << endl;
+
+void Repository::CheckOut(string src, string target) {
+    cout << GetPrevManifest() << endl;
 }
 
 void Repository::CreateRepository(const string s) {
@@ -79,12 +82,11 @@ void Repository::CreateRepository(const string s) {
 void Repository::CreateProjectTree() const {
 
     filesystem::path currentPath = filesystem::current_path();
-	// name of the directory you cd into
+    // name of the directory you cd into
     string currentDirectoryName = currentPath.filename().string();
-    
     // This will be the current path of the repository.
-    string repositoryPath =  currentPath.string() + "\\" + mRepositoryFolderName;
-    
+    string repositoryPath = currentPath.string() + "\\" + mRepositoryFolderName;
+
     for (auto &p : filesystem::recursive_directory_iterator(currentPath)) {
         // We need to avoid adding our repository folder to our repository folder.
         // We find if the directory we're in contains the repository folder name.
@@ -102,9 +104,9 @@ void Repository::CreateProjectTree() const {
     }
 }
 
-void Repository::CreateManifest() const{
-	const vector<string> date = DateStamp();
-	string dateString = date[1];
+void Repository::CreateManifest() const {
+    const vector<string> date = DateStamp();
+    string dateString = date[1];
 
     // Open file for writing.
     string manifestLocation = mRepositoryFolderName + "\\manifests\\" + dateString + ".txt";
@@ -112,18 +114,17 @@ void Repository::CreateManifest() const{
 
     // Initial Manifest file writing - path & time
     output << "Project Tree Path :" << filesystem::current_path() << endl;
-	output << "Check-in date: " << date[0] <<endl;
-    output << "Previous Manifest: "  << (GetPrevManifest().compare(dateString+".txt")==0 ? "none" : GetPrevManifest()) << endl;
+    output << "Check-in date: " << date[0] << endl;
+    output << "Previous Manifest: " << (GetPrevManifest().compare(dateString + ".txt") == 0 ? "none" : GetPrevManifest()) << endl;
 
     string currentDirectoryName = filesystem::current_path().filename().string();
- 
     output << "Project tree Files and Artifact IDs:\n" << endl;
     for (auto &p : filesystem::recursive_directory_iterator(filesystem::current_path())) {
         string path = p.path().string();
         if (path.find(mRepositoryFolderName) == string::npos) { //will exclude paths with the repo name in the output 
             output << path.substr(path.find(currentDirectoryName));
             if (filesystem::is_regular_file(p)) {
-                output << "\t| AID: " << CheckSum(p.path().string());
+                output << " | Artifact ID: " << CheckSum(p.path().string());
             }
             output << endl;
         }
@@ -137,40 +138,40 @@ const string Repository::CheckSum(const string path) const {
 }
 
 
-const vector<string> Repository::DateStamp() const{
-	// Grab date/time.  
-	vector<std::string> date;
-	time_t time = chrono::system_clock::to_time_t(chrono::system_clock::now());
-	tm *clock = localtime(&time);
-	string dateStamp = to_string(1900 + clock->tm_year) + (1 + clock->tm_mon >= 10 ? to_string( 1 + clock->tm_mon) : "0" + to_string( 1+ clock->tm_mon)) + 
-		(clock->tm_mday >= 10 ? to_string(clock->tm_mday) : "0" + to_string(clock->tm_mday));
-	string timeStamp = (clock->tm_hour >= 10 ? to_string(clock->tm_hour) : "0" + to_string(clock->tm_hour)) +
-						(clock->tm_min >= 10 ? to_string(clock->tm_min) : "0" + to_string(clock->tm_min)) + 
-						(clock->tm_sec >= 10 ? to_string(clock->tm_sec) : "0" + to_string(clock->tm_sec));
-	string datetime = dateStamp + timeStamp;
-	string sDate = to_string(1 + clock->tm_mon) + "/" + to_string(clock->tm_mday) + "/" + to_string(1900 + clock->tm_year) +
-					" time: " + to_string(clock->tm_hour % 12) + ":" + to_string(clock->tm_min) + ":" +
-					to_string(clock->tm_sec) + (clock->tm_hour >= 12 ? "pm" : "am");
-	
-	date.push_back(sDate);	   //vector[0] returns toString rep of  full date & time.
-	date.push_back(datetime);  //vector[1] returns date and time stamp for manifests.
-	date.push_back(dateStamp); //vector[2] returns date
-	date.push_back(timeStamp); // vector[3] returns time
-	return date;
+const vector<string> Repository::DateStamp() const {
+    // Grab date/time.  
+    vector<std::string> date;
+    time_t time = chrono::system_clock::to_time_t(chrono::system_clock::now());
+    tm *clock = localtime(&time);
+    string dateStamp = to_string(1900 + clock->tm_year) + (1 + clock->tm_mon >= 10 ? to_string(1 + clock->tm_mon) : "0" + to_string(1 + clock->tm_mon)) +
+        (clock->tm_mday >= 10 ? to_string(clock->tm_mday) : "0" + to_string(clock->tm_mday));
+    string timeStamp = (clock->tm_hour >= 10 ? to_string(clock->tm_hour) : "0" + to_string(clock->tm_hour)) +
+        (clock->tm_min >= 10 ? to_string(clock->tm_min) : "0" + to_string(clock->tm_min)) +
+        (clock->tm_sec >= 10 ? to_string(clock->tm_sec) : "0" + to_string(clock->tm_sec));
+    string datetime = dateStamp + timeStamp;
+    string sDate = to_string(1 + clock->tm_mon) + "/" + to_string(clock->tm_mday) + "/" + to_string(1900 + clock->tm_year) +
+        " time: " + to_string(clock->tm_hour % 12) + ":" + to_string(clock->tm_min) + ":" +
+        to_string(clock->tm_sec) + (clock->tm_hour >= 12 ? "pm" : "am");
+
+    date.push_back(sDate);	   //vector[0] returns toString rep of  full date & time.
+    date.push_back(datetime);  //vector[1] returns date and time stamp for manifests.
+    date.push_back(dateStamp); //vector[2] returns date
+    date.push_back(timeStamp); // vector[3] returns time
+    return date;
 }
 
 //Retrieves the name of the previous manifest file.
 const string Repository::GetPrevManifest() const {
-	string latest = "none"; 
-	for (auto& p : filesystem::directory_iterator(mRepositoryFolderName + "\\manifests\\")) {
-		if (std::atoi(p.path().filename().string().c_str()) > std::atoi(latest.c_str()))
-			latest = p.path().filename().string();
-	}
-	return latest;
+    string latest = "none";
+    for (auto& p : filesystem::directory_iterator(mRepositoryFolderName + "\\manifests\\")) {
+        if (std::atoi(p.path().filename().string().c_str()) > std::atoi(latest.c_str()))
+            latest = p.path().filename().string();
+    }
+    return latest;
 }
 
 /*
-**This retrieves the path relative to the the repo folder. 
+**This retrieves the path relative to the the repo folder.
 **From C:\\..\ptree\example , will return C:\\..\repo\example
 */
 const string Repository::GetRepoPath(string ptreepath, string repopath , string filePath) const {
@@ -183,13 +184,14 @@ const string Repository::GetRepoPath(string ptreepath, string repopath , string 
 
 //Prints out a nicely formated tree layout of the directory. Used for Manifest.
 void Repository::PrintStructure(ofstream os, string dir) {
-	filesystem::path c_path = dir;
-	os << c_path.filename() << endl;
-	int depth = 1;
-	for (auto &p : filesystem::directory_iterator(c_path)) {
-	
-	}
+    filesystem::path c_path = dir;
+    os << c_path.filename() << endl;
+    int depth = 1;
+    for (auto &p : filesystem::directory_iterator(c_path)) {
+
+    }
 }
+
 void Repository::PrintStructure(ofstream os, filesystem::path dir, int depth) {
-	
+
 }

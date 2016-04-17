@@ -73,7 +73,15 @@ BUGS:
 Manifests creation is working, but only at a very basic level. You will
 have to run "drm init" again to update the manifests file. In the future,
 we would like to create a class handling all Manifests file creation and
-additions. This way, we can implement stuff like "drm add" correctly.
+additions. This way, we can implement stuff like "drm add" correctly. Also,
+the manifest creation method is adding empty folders into the manifest even
+though the empty folder isn't copied to the repository folder. We hope to fix
+this soon.
+
+There is also something that looks like a bug, but isn't. When creating Artifact
+IDs (using the CheckSum method), it seems like the Artifact ID is always zero.
+This is just a coincidence. We take the file size and use the modulus operator
+on it. It's filesize % 256.
 
 Another bug involves compiling on Linux. If you get past the CMake instructions,
 and actually compile the program, when you run it, the program doesn't work

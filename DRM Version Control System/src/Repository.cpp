@@ -35,37 +35,45 @@ void Repository::Initialize() {
 check in will update repository folder with new files/folders from the project tree directory.
 Manifest will be updated as well.
 */
-void Repository::CheckIn( string src, string target) {	
-	//iterate through ptree folder for files. 
-	for (auto &p : filesystem::recursive_directory_iterator(src)) {
-		string  filePath = p.path().string();
-		if (filesystem::is_regular_file(p)) {
-			if (filePath.find(mRepositoryFolderName) == string::npos) {	// excludes the cecs343 repo from the iteration
-				bool isNewFile = true;
-				// iterates through 343repo
-				for (auto &r : filesystem::recursive_directory_iterator(target)) {	
-					if (p.path().filename().string().compare(r.path().filename().string()) == 0) { // file already exists in repo. will update file in repo.
-						isNewFile = false;
-						string artifact = r.path().string() + "\\" + CheckSum(filePath);  // the theoretical file path of the updated file's artifact
-						if (!filesystem::exists(artifact)) {
-							filesystem::copy_file(filePath, artifact, filesystem::copy_options::overwrite_existing); // if artifact does not exist yet, copy that file in the repo's artifact folder.
-							cout << "File updated: " << p.path().filename() << endl;
-						}
-					}
-				}
-				// new file is found. create a new subdirectory and new artifact in the repo
-				if (isNewFile) {
-					string newFilePath = GetRepoPath(src, target, p.path().string());
-					filesystem::create_directories(newFilePath); // Create folders for the files in the repository.
-					newFilePath = newFilePath + "\\" + CheckSum(filePath); // Update filepath to include checksum. This will rename the file to that checksum.
-					filesystem::copy_file(filePath, newFilePath); // Copies over the file to its respective repository folder.
-					cout << "New File is added to the repo: " << p.path().filename() << endl;
-				}
-			}
-		}
-	}
-	CreateManifest(); // updates manifest file
-
+void Repository::CheckIn(string src, string target) {
+    for (auto &p : filesystem::recursive_directory_iterator(src)) { // Go through the project tree folder and check for updated/new files.
+        string  filePath = p.path().string();
+        if (filesystem::is_regular_file(p)) {
+            if (filePath.find(mRepositoryFolderName) == string::npos) {	// Excludes the project tree's repository folder from the iteration.
+                bool isNewFile = true;
+                for (auto &r : filesystem::recursive_directory_iterator(target)) { // Iterates through the repository folder
+                    if (filesystem::is_directory(r)) {
+                        string test1 = GetFileLocation(src, p.path().string());
+                        string test2 = GetFileLocation(target, r.path().string());
+                        if (GetFileLocation(src, p.path().string()).compare(GetFileLocation(target, r.path().string())) == 0) { // File already exists in repository. Update repository with project tree's version.
+                            isNewFile = false;
+                            string artifact = r.path().string() + "\\" + CheckSum(filePath);  // the theoretical file path of the updated file's artifact
+                            if (!filesystem::exists(artifact)) { // If this file does not exist in the repository...
+                                string repositoryProjectTreeFileLocation = r.path().parent_path().parent_path().string() + GetFileLocation(src, filePath); // Location of where to place the file in repository's project tree
+                                filesystem::copy_file(filePath, artifact, filesystem::copy_options::overwrite_existing); // Copy it over to the repository.
+                                filesystem::copy_file(artifact, repositoryProjectTreeFileLocation, filesystem::copy_options::overwrite_existing); // Now copy it to repository's project tree.
+                                cout << "File updated: " << p.path().filename() << endl;
+                                break; // Finished copying. Break out.
+                            }
+                        }
+                    }
+                }
+                // new file is found. create a new subdirectory and new artifact in the repo
+                if (isNewFile) {
+                    string newFilePath = GetRepoPath(src, target, filePath);
+                    filesystem::path path = newFilePath;
+                    string repositoryProjectTreeFileLocation = path.parent_path().parent_path().string() + GetFileLocation(src, filePath); // Location of where to place the file in repository's project tree
+                    filesystem::create_directories(newFilePath); // Create folders for the files in the repository.
+                    newFilePath = newFilePath + "\\" + CheckSum(filePath); // Update filepath to include checksum. This will rename the file to that checksum.
+                    filesystem::copy_file(filePath, newFilePath); // Copies over the file to its respective repository folder.
+                    filesystem::copy_file(newFilePath, repositoryProjectTreeFileLocation); // Now copy it to repository's project tree.
+                    cout << "New File is added to the repo: " << p.path().filename() << endl;
+                    break; // Finish copying. Break out.
+                }
+            }
+        }
+    }
+    CreateManifest(); // updates manifest file
 }
 
 void Repository::CheckOut(string src, string target) {
@@ -96,7 +104,7 @@ void Repository::CreateProjectTree() const {
         }
         if (filesystem::is_regular_file(p)) {
             string filePath = p.path().string(); // Location of where the repository is stored.
-			string destination = GetRepoPath(currentPath.string(), repositoryPath, filePath);
+            string destination = GetRepoPath(currentPath.string(), repositoryPath, filePath);
             filesystem::create_directories(destination); // Create folders for the files in the repository.
             destination = destination + "\\" + CheckSum(filePath); // Update destination to include checksum. This will rename the file to that checksum.
             filesystem::copy_file(filePath, destination, filesystem::copy_options::overwrite_existing); // Copies over the file to its respective repository folder.
@@ -121,7 +129,7 @@ void Repository::CreateManifest() const {
     output << "Project tree Files and Artifact IDs:\n" << endl;
     for (auto &p : filesystem::recursive_directory_iterator(filesystem::current_path())) {
         string path = p.path().string();
-        if (path.find(mRepositoryFolderName) == string::npos) { //will exclude paths with the repo name in the output 
+        if (path.find(mRepositoryFolderName) == string::npos && filesystem::is_regular_file(p)) { // Will exclude repository directory and empty folders.
             output << path.substr(path.find(currentDirectoryName));
             if (filesystem::is_regular_file(p)) {
                 output << " | Artifact ID: " << CheckSum(p.path().string());
@@ -174,12 +182,22 @@ const string Repository::GetPrevManifest() const {
 **This retrieves the path relative to the the repo folder.
 **From C:\\..\ptree\example , will return C:\\..\repo\example
 */
-const string Repository::GetRepoPath(string ptreepath, string repopath , string filePath) const {
-	filesystem::path ptree = ptreepath;
-	string currentDirectoryName = ptree.filename().string();
-	int cutOffLocation = filePath.find(currentDirectoryName) + currentDirectoryName.length(); // location where dir name is found.
-	string finalpath = repopath + filePath.substr(cutOffLocation);
-	return finalpath;
+const string Repository::GetRepoPath(string ptreepath, string repopath, string filePath) const {
+    filesystem::path ptree = ptreepath;
+    string currentDirectoryName = ptree.filename().string();
+    int cutOffLocation = filePath.find(currentDirectoryName) + currentDirectoryName.length(); // location where dir name is found.
+    string finalPath = repopath + filePath.substr(cutOffLocation);
+    return finalPath;
+}
+
+// Cuts off path. Example: C:\Projects\ProjectTree\File.txt -> \File.txt
+// Pass in "C:\Projects\ProjectTree" as rootPath and "C:\Projects\ProjectTree\File.txt" as filePath
+const string Repository::GetFileLocation(string rootPath, string filePath) const {
+    filesystem::path path = rootPath;
+    string directory = path.filename().string();
+    int cutOffLocation = filePath.find(directory) + directory.length();
+    string finalPath = filePath.substr(cutOffLocation);
+    return finalPath;
 }
 
 //Prints out a nicely formated tree layout of the directory. Used for Manifest.

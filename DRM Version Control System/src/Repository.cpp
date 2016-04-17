@@ -35,36 +35,37 @@ void Repository::Initialize() {
 check in will update repository folder with new files/folders from the project tree directory.
 Manifest will be updated as well.
 */
-void Repository::CheckIn(string src, string target) {
-    //iterate through ptree folder for files. 
-    for (auto &p : filesystem::recursive_directory_iterator(src)) {
-        string  filePath = p.path().string();
-        if (filesystem::is_regular_file(p)) {
-            if (filePath.find(mRepositoryFolderName) == string::npos) {	// excludes the cecs343 repo from the iteration
-                bool isNewFile = true;
-                // iterates through 343repo
-                for (auto &r : filesystem::recursive_directory_iterator(target)) {
-                    if (p.path().filename().string().compare(r.path().filename().string()) == 0) { // file already exists in repo. will update file in repo.
-                        isNewFile = false;
-                        string artifact = r.path().string() + "\\" + CheckSum(filePath);  // the theoretical file path of the updated file's artifact
-                        if (!filesystem::exists(artifact)) {
-                            filesystem::copy_file(filePath, artifact); // if artifact does not exist yet, copy that file in the repo's artifact folder.
-                            cout << "File updated: " << p.path().filename() << endl;
-                        }
-                    }
-                }
-                // new file is found. create a new subdirectory and new artifact in the repo
-                if (isNewFile) {
-                    string newFilePath = GetRepoPath(p.path().string());
-                    filesystem::create_directories(newFilePath); // Create folders for the files in the repository.
-                    newFilePath = newFilePath + "\\" + CheckSum(filePath); // Update filepath to include checksum. This will rename the file to that checksum.
-                    filesystem::copy_file(filePath, newFilePath, filesystem::copy_options::overwrite_existing); // Copies over the file to its respective repository folder.
-                    cout << "New File is added to the repo: " << p.path().filename() << endl;
-                }
-            }
-        }
-    }
-    CreateManifest(); // updates manifest file
+void Repository::CheckIn( string src, string target) {	
+	//iterate through ptree folder for files. 
+	for (auto &p : filesystem::recursive_directory_iterator(src)) {
+		string  filePath = p.path().string();
+		if (filesystem::is_regular_file(p)) {
+			if (filePath.find(mRepositoryFolderName) == string::npos) {	// excludes the cecs343 repo from the iteration
+				bool isNewFile = true;
+				// iterates through 343repo
+				for (auto &r : filesystem::recursive_directory_iterator(target)) {	
+					if (p.path().filename().string().compare(r.path().filename().string()) == 0) { // file already exists in repo. will update file in repo.
+						isNewFile = false;
+						string artifact = r.path().string() + "\\" + CheckSum(filePath);  // the theoretical file path of the updated file's artifact
+						if (!filesystem::exists(artifact)) {
+							filesystem::copy_file(filePath, artifact, filesystem::copy_options::overwrite_existing); // if artifact does not exist yet, copy that file in the repo's artifact folder.
+							cout << "File updated: " << p.path().filename() << endl;
+						}
+					}
+				}
+				// new file is found. create a new subdirectory and new artifact in the repo
+				if (isNewFile) {
+					string newFilePath = GetRepoPath(src, target, p.path().string());
+					filesystem::create_directories(newFilePath); // Create folders for the files in the repository.
+					newFilePath = newFilePath + "\\" + CheckSum(filePath); // Update filepath to include checksum. This will rename the file to that checksum.
+					filesystem::copy_file(filePath, newFilePath); // Copies over the file to its respective repository folder.
+					cout << "New File is added to the repo: " << p.path().filename() << endl;
+				}
+			}
+		}
+	}
+	CreateManifest(); // updates manifest file
+
 }
 
 void Repository::CheckOut(string src, string target) {
@@ -95,7 +96,7 @@ void Repository::CreateProjectTree() const {
         }
         if (filesystem::is_regular_file(p)) {
             string filePath = p.path().string(); // Location of where the repository is stored.
-            string destination = GetRepoPath(filePath);
+			string destination = GetRepoPath(currentPath.string(), repositoryPath, filePath);
             filesystem::create_directories(destination); // Create folders for the files in the repository.
             destination = destination + "\\" + CheckSum(filePath); // Update destination to include checksum. This will rename the file to that checksum.
             filesystem::copy_file(filePath, destination, filesystem::copy_options::overwrite_existing); // Copies over the file to its respective repository folder.
@@ -173,11 +174,12 @@ const string Repository::GetPrevManifest() const {
 **This retrieves the path relative to the the repo folder.
 **From C:\\..\ptree\example , will return C:\\..\repo\example
 */
-const string Repository::GetRepoPath(string filePath) const {
-    string currentDirectoryName = filesystem::current_path().filename().string();
-    int cutOffLocation = filePath.find(currentDirectoryName) + currentDirectoryName.length(); // location where dir name is found.
-    string repopath = filePath.substr(0, cutOffLocation) + "\\" + mRepositoryFolderName + filePath.substr(cutOffLocation);
-    return repopath;
+const string Repository::GetRepoPath(string ptreepath, string repopath , string filePath) const {
+	filesystem::path ptree = ptreepath;
+	string currentDirectoryName = ptree.filename().string();
+	int cutOffLocation = filePath.find(currentDirectoryName) + currentDirectoryName.length(); // location where dir name is found.
+	string finalpath = repopath + filePath.substr(cutOffLocation);
+	return finalpath;
 }
 
 //Prints out a nicely formated tree layout of the directory. Used for Manifest.

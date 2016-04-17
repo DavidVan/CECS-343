@@ -17,9 +17,9 @@ private:
     void CreateProjectTree() const;
     void CreateManifest() const;
     const std::string CheckSum(const std::string) const;
-    const std::vector<std::string> DateStamp() const;
-    const std::string GetPrevManifest() const;
-    const std::string GetRepoPath(std::string) const;
+	const std::vector<std::string> DateStamp()const ;
+	const std::string GetPrevManifest() const ;
+	const std::string GetRepoPath(std::string , std::string, std::string) const ;
 
 public:
     Repository();

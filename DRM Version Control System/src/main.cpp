@@ -21,6 +21,9 @@ void runCommand(int argc, char* argv[], Repository* repository) {
     if (string(argv[1]) == "init") {
         repository->Initialize();
     }
+    if (string(argv[1]) == "update") {
+        repository->Update();
+    }
 	else if (string(argv[1]) == "checkin") {
         if (argv[3] == nullptr) {
             repository->CheckIn(argv[2], "");

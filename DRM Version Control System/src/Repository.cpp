@@ -31,6 +31,12 @@ void Repository::Initialize() {
     CreateManifest(mRepositoryFolderName);
 }
 
+void Repository::Update() {
+    cout << "Updating repository." << endl;
+    CreateProjectTree();
+    CreateManifest(mRepositoryFolderName);
+}
+
 /*
 @Param: src = project tree folder ; target = repository folder
 check in will update repository folder with new files/folders from the project tree directory.

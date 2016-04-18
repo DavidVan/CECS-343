@@ -26,6 +26,7 @@ public:
     Repository();
     ~Repository();
     void Initialize();
+    void Update();
     void CheckIn(std::string, std::string);
     void CheckOut(std::string, std::string, std::string);
     void PrintStructure(std::ofstream, std::string);

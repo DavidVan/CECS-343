@@ -95,13 +95,13 @@ void Repository::CheckOut(string src, string target) {
 	//filesystem::copy(src, target, filesystem::copy_options::directories_only);
 
 	//READING into manifest file
-	string line, sourceFile, sourcePath ,targetPath;
+	string line, sourceFile, sourcePath, targetPath;
 	deque <string> text;
-	string manifestLocation = src+ "\\manifests\\" + GetPrevManifest();
+	string manifestLocation = src + "\\manifests\\" + GetPrevManifest();
 	cout << manifestLocation << endl;
 	ifstream imanFile(manifestLocation);
 	filesystem::create_directories(target);
-	while(getline(imanFile,line))
+	while (getline(imanFile, line))
 	{
 		if (!(line.find("@") != string::npos) && !(line.find("#") != string::npos) && !(line.find("!") != string::npos)) {
 			if ((line.find("Artifact ID") != string::npos) && line.find("\\") != string::npos && !(line.find(".") != string::npos)) {
@@ -116,11 +116,11 @@ void Repository::CheckOut(string src, string target) {
 				cout << targetPath << endl;
 				if (!filesystem::exists(target)) {
 					filesystem::copy_file(sourcePath, targetPath);
-			}
+				}
 				//Broke
 			}
 			else;
-				//line = "@" + line;// Appends @ for non-dir/ non-files
+			//line = "@" + line;// Appends @ for non-dir/ non-files
 		}
 		text.push_back(line);
 	}
@@ -132,7 +132,7 @@ void Repository::CheckOut(string src, string target) {
 	omanFile.close();
 	//END READING TO MANIFEST
 
-	string newManifestLocation = target + "\\manifests\\" +GetPrevManifest();
+	string newManifestLocation = target + "\\manifests\\" + GetPrevManifest();
 	cout << newManifestLocation << endl;
 	cout << manifestLocation << endl;
 	if (filesystem::exists(newManifestLocation)) {

@@ -110,8 +110,13 @@ void Repository::CheckOut(string src, string target) {
 			else if ((line.find("Artifact ID") != string::npos) && line.find("\\") != string::npos && (line.find(".") != string::npos)) {
 				//line = "!" + line;// Appends ! for files, can be changed later
 				//Broke
-				cout << src + line.substr(line.find("\\"), line.find(" ") - line.find("\\")) + "\\" + line.substr(line.find_last_of(" ") + 1) << endl;
-				cout << target << endl;
+				string sourcePath = src + line.substr(line.find("\\"), line.find(" ") - line.find("\\")) + "\\" + line.substr(line.find_last_of(" ") + 1);
+				string targetPath = target + line.substr(line.find("\\"), line.find(" ") - line.find("\\"));
+				cout << sourcePath << endl;
+				cout << targetPath << endl;
+				if (!filesystem::exists(target)) {
+					filesystem::copy_file(sourcePath, targetPath);
+			}
 				//Broke
 			}
 			else;
@@ -126,6 +131,14 @@ void Repository::CheckOut(string src, string target) {
 	}
 	omanFile.close();
 	//END READING TO MANIFEST
+
+	string newManifestLocation = target + "\\manifests\\" +GetPrevManifest();
+	cout << newManifestLocation << endl;
+	cout << manifestLocation << endl;
+	if (filesystem::exists(newManifestLocation)) {
+		filesystem::create_directories(newManifestLocation);
+	}
+	filesystem::copy_file(manifestLocation, newManifestLocation);
 	//CreateManifest();
 	//cout << GetPrevManifest() << endl;
 }

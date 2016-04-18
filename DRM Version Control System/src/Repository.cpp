@@ -80,7 +80,10 @@ void Repository::CheckIn(string src, string target) {
     CreateManifest(); // updates manifest file
 }
 
-void Repository::CheckOut(string src, string target) {
+void Repository::CheckOut(string src, string target, string manFileName) {
+	if (src == "") {
+		src = filesystem::current_path().string() + "\\" + mRepositoryFolderName;
+	}
 	if (!filesystem::exists(src) || !filesystem::is_directory(src)) {
 		cout << "Source doesn't exist or is not a directory." << endl;
 		return;
@@ -89,60 +92,43 @@ void Repository::CheckOut(string src, string target) {
 		cout << "Target is not a directory." << endl;
 		return;
 	}
-	//TWO OPTIONS: 1. COPY EVERYTHING, EVERYTHING in ptree from a to b
-	//filesystem::copy(src, target, filesystem::copy_options::recursive);
-	//OPTION 2: COPY DIRECTORIES ONLY from a to b
-	//filesystem::copy(src, target, filesystem::copy_options::directories_only);
-
 	//READING into manifest file
-	string line, sourceFile, sourcePath, targetPath;
-	deque <string> text;
-	string manifestLocation = src + "\\manifests\\" + GetPrevManifest();
+	string line, sourcePath, targetPath;
+	string manifestLocation = src + "\\manifests\\" + ((manFileName == "") ? GetPrevManifest() : (manFileName + ".txt"));
+	if (!filesystem::exists(manifestLocation)) {
+		cout << "Manifest doesn't exist" << endl;
+		return;
+	}
 	cout << manifestLocation << endl;
-	ifstream imanFile(manifestLocation);
+	ifstream input(manifestLocation);
 	filesystem::create_directories(target);
-	while (getline(imanFile, line))
+	while (getline(input, line))
 	{
-		if (!(line.find("@") != string::npos) && !(line.find("#") != string::npos) && !(line.find("!") != string::npos)) {
-			if ((line.find("Artifact ID") != string::npos) && line.find("\\") != string::npos && !(line.find(".") != string::npos)) {
-				//line = "#" + line;// Appends # for directories, can be changed later
-			}
-			else if ((line.find("Artifact ID") != string::npos) && line.find("\\") != string::npos && (line.find(".") != string::npos)) {
-				//line = "!" + line;// Appends ! for files, can be changed later
-				//Broke
-				string sourcePath = src + line.substr(line.find("\\"), line.find(" ") - line.find("\\")) + "\\" + line.substr(line.find_last_of(" ") + 1);
-				string targetPath = target + line.substr(line.find("\\"), line.find(" ") - line.find("\\"));
+		if (!(line.find("#") != string::npos)) {
+			if ((line.find("Artifact ID") != string::npos) && line.find("\\") != string::npos && (line.find(".") != string::npos)) {
+				sourcePath = src + line.substr(line.find("\\"), line.find(" ") - line.find("\\")) + "\\" + line.substr(line.find_last_of(" ") + 1);
+				targetPath = target + line.substr(line.find("\\"), line.find(" ") - line.find("\\"));
 				cout << sourcePath << endl;
 				cout << targetPath << endl;
 				if (!filesystem::exists(target)) {
 					filesystem::copy_file(sourcePath, targetPath);
 				}
-				//Broke
 			}
-			else;
-			//line = "@" + line;// Appends @ for non-dir/ non-files
 		}
-		text.push_back(line);
 	}
-	imanFile.close();
-	fstream omanFile(manifestLocation);
-	for (deque <string> ::iterator lines = text.begin(); lines != text.end(); ++lines) {
-		omanFile << *lines << "\n";
-	}
-	omanFile.close();
+	input.close();
 	//END READING TO MANIFEST
-
-	string newManifestLocation = target + "\\manifests\\" + GetPrevManifest();
+	string newManifestLocation = target + "\\manifests\\" + ((manFileName == "") ? GetPrevManifest() : (manFileName + ".txt"));
 	cout << newManifestLocation << endl;
 	cout << manifestLocation << endl;
-	if (filesystem::exists(newManifestLocation)) {
-		filesystem::create_directories(newManifestLocation);
+	if (!filesystem::exists(newManifestLocation)) {
+		filesystem::copy_file(manifestLocation, newManifestLocation);//copying source manifest to target manifest if not exists
 	}
-	filesystem::copy_file(manifestLocation, newManifestLocation);
+	string temp = mRepositoryFolderName;
+
 	//CreateManifest();
 	//cout << GetPrevManifest() << endl;
 }
-
 void Repository::CreateRepository(const string s) {
     // Create the directory.
     filesystem::create_directory(s);

@@ -27,7 +27,7 @@ public:
     ~Repository();
     void Initialize();
     void CheckIn(std::string, std::string);
-    void CheckOut(std::string, std::string);
+    void CheckOut(std::string, std::string, std::string);
     void PrintStructure(std::ofstream, std::string);
     void PrintStructure(std::ofstream, std::experimental::filesystem::path, int);
 };

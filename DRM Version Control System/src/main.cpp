@@ -30,7 +30,7 @@ void runCommand(int argc, char* argv[], Repository* repository) {
         }
 	}
 	else if (string(argv[1]) == "checkout") {
-		repository->CheckOut(argv[2], argv[3]);
+		repository->CheckOut(argv[2], argv[3], argv[4]);
 	}
     else if (string(argv[1]) == "add") {
         // Do something

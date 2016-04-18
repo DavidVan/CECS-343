@@ -28,7 +28,7 @@ void Repository::Initialize() {
         cout << endl << "Repository created." << endl;
     }
     CreateProjectTree();
-    CreateManifest();
+    CreateManifest(mRepositoryFolderName);
 }
 
 /*
@@ -77,7 +77,7 @@ void Repository::CheckIn(string src, string target) {
             }
         }
     }
-    CreateManifest(); // updates manifest file
+    CreateManifest(target); // updates manifest file
 }
 
 void Repository::CheckOut(string src, string target, string manFileName) {
@@ -94,7 +94,7 @@ void Repository::CheckOut(string src, string target, string manFileName) {
 	}
 	//READING into manifest file
 	string line, sourcePath, targetPath;
-	string manifestLocation = src + "\\manifests\\" + ((manFileName == "") ? GetPrevManifest() : (manFileName + ".txt"));
+	string manifestLocation = src + "\\manifests\\" + ((manFileName == "") ? GetPrevManifest(src) : (manFileName + ".txt"));
 	if (!filesystem::exists(manifestLocation)) {
 		cout << "Manifest doesn't exist" << endl;
 		return;
@@ -118,7 +118,7 @@ void Repository::CheckOut(string src, string target, string manFileName) {
 	}
 	input.close();
 	//END READING TO MANIFEST
-	string newManifestLocation = target + "\\manifests\\" + ((manFileName == "") ? GetPrevManifest() : (manFileName + ".txt"));
+	string newManifestLocation = target + "\\manifests\\" + ((manFileName == "") ? GetPrevManifest(src) : (manFileName + ".txt"));
 	cout << newManifestLocation << endl;
 	cout << manifestLocation << endl;
 	if (!filesystem::exists(newManifestLocation)) {
@@ -161,18 +161,18 @@ void Repository::CreateProjectTree() const {
     }
 }
 
-void Repository::CreateManifest() const {
+void Repository::CreateManifest(string repopath) const {
     const vector<string> date = DateStamp();
     string dateString = date[1];
 
     // Open file for writing.
-    string manifestLocation = mRepositoryFolderName + "\\manifests\\" + dateString + ".txt";
+    string manifestLocation = repopath + "\\manifests\\" + dateString + ".txt";
     ofstream output(manifestLocation);
 
     // Initial Manifest file writing - path & time
     output << "# Project Tree Path :" << filesystem::current_path() << endl;
     output << "# Check-in date: " << date[0] << endl;
-    output << "# Previous Manifest: " << GetPrevManifest() << endl;
+    output << "# Previous Manifest: " << GetPrevManifest(repopath) << endl;
 
     string currentDirectoryName = filesystem::current_path().filename().string();
     output << "# Project tree Files and Artifact IDs:\n" << endl;
@@ -218,10 +218,10 @@ const vector<string> Repository::DateStamp() const {
 }
 
 //Retrieves the name of the previous manifest file.
-const string Repository::GetPrevManifest() const {
+const string Repository::GetPrevManifest(string repopath) const {
     string latest = "0";
     string previous = "";
-    for (auto& p : filesystem::directory_iterator(mRepositoryFolderName + "\\manifests\\")) {
+    for (auto& p : filesystem::directory_iterator(repopath + "\\manifests\\")) {
         string file = p.path().filename().string();
         int cutOffLocation = file.find(".");
         file = file.substr(0, cutOffLocation);

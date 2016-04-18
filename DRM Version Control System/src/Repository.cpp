@@ -28,13 +28,13 @@ void Repository::Initialize() {
         cout << endl << "Repository created." << endl;
     }
     CreateProjectTree();
-    CreateManifest(mRepositoryFolderName);
+    CreateManifest(filesystem::current_path().string(), mRepositoryFolderName, "");
 }
 
 void Repository::Update() {
     cout << "Updating repository." << endl;
     CreateProjectTree();
-    CreateManifest(mRepositoryFolderName);
+    CreateManifest(filesystem::current_path().string(), mRepositoryFolderName, "");
 }
 
 /*
@@ -83,7 +83,7 @@ void Repository::CheckIn(string src, string target) {
             }
         }
     }
-    CreateManifest(target); // updates manifest file
+    CreateManifest(filesystem::current_path().string(), target, "# Check In Location: " + target); // updates manifest file
 }
 
 void Repository::CheckOut(string src, string target, string manFileName) {
@@ -119,8 +119,7 @@ void Repository::CheckOut(string src, string target, string manFileName) {
                 int directoryCutOffLocation = targetPath.length() + (targetPath.find_last_of("\\") - targetPath.length());
                 targetDirectory = targetPath.substr(0, directoryCutOffLocation);
                 filesystem::create_directories(targetDirectory);
-				cout << sourcePath << endl;
-				cout << targetPath << endl;
+				cout << "Copying to: " << targetPath << endl;
 				filesystem::copy_file(sourcePath, targetPath, filesystem::copy_options::overwrite_existing);
 			}
 		}
@@ -128,17 +127,14 @@ void Repository::CheckOut(string src, string target, string manFileName) {
 	input.close();
 	//END READING TO MANIFEST
 	string newManifestLocation = target + "\\" + mRepositoryFolderName + "\\manifests\\" + manFileName + ".txt";
-	cout << newManifestLocation << endl;
-	cout << manifestLocation << endl;
 	if (!filesystem::exists(newManifestLocation)) {
         int directoryCutOffLocation = newManifestLocation.length() + (newManifestLocation.find_last_of("\\") - newManifestLocation.length());
         string manifestDirectory = newManifestLocation.substr(0, directoryCutOffLocation);
         filesystem::create_directories(manifestDirectory);
 		filesystem::copy_file(manifestLocation, newManifestLocation, filesystem::copy_options::overwrite_existing); //copying source manifest to target manifest if not exists
 	}
-
-	//CreateManifest();
-	//cout << GetPrevManifest() << endl;
+    CreateManifest(target, target + "\\" + mRepositoryFolderName, "# Previous Project Tree Location: " + filesystem::current_path().string());
+    cout << endl;
 }
 void Repository::CreateRepository(const string s) {
     // Create the directory.
@@ -172,22 +168,23 @@ void Repository::CreateProjectTree() const {
     }
 }
 
-void Repository::CreateManifest(string repopath) const {
+void Repository::CreateManifest(string directory, string repoPath, string words) const {
     const vector<string> date = DateStamp();
     string dateString = date[1];
 
     // Open file for writing.
-    string manifestLocation = repopath + "\\manifests\\" + dateString + ".txt";
+    string manifestLocation = repoPath + "\\manifests\\" + dateString + ".txt";
     ofstream output(manifestLocation);
 
     // Initial Manifest file writing - path & time
-    output << "# Project Tree Path :" << filesystem::current_path() << endl;
+    output << "# Project Tree Path: " << directory << endl;
     output << "# Check-in date: " << date[0] << endl;
-    output << "# Previous Manifest: " << GetPrevManifest(repopath) << endl;
-
-    string currentDirectoryName = filesystem::current_path().filename().string();
+    output << "# Previous Manifest: " << GetPrevManifest(repoPath) << endl;
+    output << words << endl; // Custom messages here.
+    
+    string currentDirectoryName = (directory.find("\\") ? (directory.substr(directory.find_last_of("\\") + 1)) : directory);
     output << "# Project tree Files and Artifact IDs:\n" << endl;
-    for (auto &p : filesystem::recursive_directory_iterator(filesystem::current_path())) {
+    for (auto &p : filesystem::recursive_directory_iterator(directory)) {
         string path = p.path().string();
         if (path.find(mRepositoryFolderName) == string::npos && filesystem::is_regular_file(p)) { // Will exclude repository directory and empty folders.
             output << path.substr(path.find(currentDirectoryName));

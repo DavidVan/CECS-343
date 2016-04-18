@@ -21,6 +21,13 @@ simplifying assumptions in order to get to working software quickly.
 Usage:
 
 Initialize repository: drm init
+Update repository: drm update
+Check in: drm checkin <updated tree> <repo - where to store changes>
+OR
+drm checkin <repo - where to store changes>
+Check out: drm checkout <project tree> <where to store the copy of the tree> <version>
+OR
+drm checkout <where to store the copy of the tree> <version>
 
 --------------------------------------------------------------------------------
 
@@ -58,17 +65,15 @@ To run the program, go inside the "bin" folder, and move the executable named
 "drm" to the root folder of where you want to create a repository. Then in a
 terminal/cmd, type "drm init".
 
+For other commands, please read above.
+
 --------------------------------------------------------------------------------
 
 BUGS:
 
-Manifests creation is working, but only at a very basic level. You will
-have to run "drm init" again to update the manifests file. In the future,
-we would like to create a class handling all Manifests file creation and
-additions. This way, we can implement stuff like "drm add" correctly. Also,
-the manifest creation method is adding empty folders into the manifest even
-though the empty folder isn't copied to the repository folder. We hope to fix
-this soon.
+No error handling.
+
+Remaining bugs:
 
 There is also something that looks like a bug, but isn't. When creating Artifact
 IDs (using the CheckSum method), it seems like the Artifact ID is always zero.

@@ -99,38 +99,43 @@ void Repository::CheckOut(string src, string target, string manFileName) {
 		return;
 	}
 	//READING into manifest file
-	string line, sourcePath, targetPath;
+    string line;
 	string manifestLocation = src + "\\manifests\\" + ((manFileName == "") ? GetPrevManifest(src) : (manFileName + ".txt"));
 	if (!filesystem::exists(manifestLocation)) {
 		cout << "Manifest doesn't exist" << endl;
 		return;
 	}
-	cout << manifestLocation << endl;
+	cout << "Manifest Location: " << manifestLocation << endl;
 	ifstream input(manifestLocation);
 	filesystem::create_directories(target);
 	while (getline(input, line))
 	{
-		if (!(line.find("#") != string::npos)) {
-			if ((line.find("Artifact ID") != string::npos) && line.find("\\") != string::npos && (line.find(".") != string::npos)) {
-				sourcePath = src + line.substr(line.find("\\"), line.find(" ") - line.find("\\")) + "\\" + line.substr(line.find_last_of(" ") + 1);
-				targetPath = target + line.substr(line.find("\\"), line.find(" ") - line.find("\\"));
+		if (line.find("#") == string::npos) { // Tries to find "#" in the line. If it doesn't, it's true and the loop continues.
+			if ((line.find("Artifact ID") != string::npos) && (line.find("\\") != string::npos)) { // Found a line containing paths to files.
+                string sourcePath, targetPath, targetDirectory;
+                int cutOffLocation = line.find(" | ") - line.find("\\"); // Needed to cut off " | Artifact ID: ~~~~"... We find the location of " | " and then the location of the first "\", and subtract them.
+                sourcePath = src + line.substr(line.find("\\"), cutOffLocation) + "\\" + line.substr(line.find_last_of(" ") + 1);
+                targetPath = target + line.substr(line.find("\\"), cutOffLocation);
+                int directoryCutOffLocation = targetPath.length() + (targetPath.find_last_of("\\") - targetPath.length());
+                targetDirectory = targetPath.substr(0, directoryCutOffLocation);
+                filesystem::create_directories(targetDirectory);
 				cout << sourcePath << endl;
 				cout << targetPath << endl;
-				if (!filesystem::exists(target)) {
-					filesystem::copy_file(sourcePath, targetPath);
-				}
+				filesystem::copy_file(sourcePath, targetPath, filesystem::copy_options::overwrite_existing);
 			}
 		}
 	}
 	input.close();
 	//END READING TO MANIFEST
-	string newManifestLocation = target + "\\manifests\\" + ((manFileName == "") ? GetPrevManifest(src) : (manFileName + ".txt"));
+	string newManifestLocation = target + "\\" + mRepositoryFolderName + "\\manifests\\" + manFileName + ".txt";
 	cout << newManifestLocation << endl;
 	cout << manifestLocation << endl;
 	if (!filesystem::exists(newManifestLocation)) {
-		filesystem::copy_file(manifestLocation, newManifestLocation);//copying source manifest to target manifest if not exists
+        int directoryCutOffLocation = newManifestLocation.length() + (newManifestLocation.find_last_of("\\") - newManifestLocation.length());
+        string manifestDirectory = newManifestLocation.substr(0, directoryCutOffLocation);
+        filesystem::create_directories(manifestDirectory);
+		filesystem::copy_file(manifestLocation, newManifestLocation, filesystem::copy_options::overwrite_existing); //copying source manifest to target manifest if not exists
 	}
-	string temp = mRepositoryFolderName;
 
 	//CreateManifest();
 	//cout << GetPrevManifest() << endl;

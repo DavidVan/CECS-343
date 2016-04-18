@@ -173,7 +173,7 @@ void Repository::CreateManifest() const {
     // Initial Manifest file writing - path & time
     output << "# Project Tree Path :" << filesystem::current_path() << endl;
     output << "# Check-in date: " << date[0] << endl;
-    output << "# Previous Manifest: " << (GetPrevManifest().compare(dateString + ".txt") == 0 ? "none" : GetPrevManifest()) << endl;
+    output << "# Previous Manifest: " << GetPrevManifest() << endl;
 
     string currentDirectoryName = filesystem::current_path().filename().string();
     output << "# Project tree Files and Artifact IDs:\n" << endl;
@@ -220,12 +220,18 @@ const vector<string> Repository::DateStamp() const {
 
 //Retrieves the name of the previous manifest file.
 const string Repository::GetPrevManifest() const {
-    string latest = "none";
+    string latest = "0";
+    string previous = "";
     for (auto& p : filesystem::directory_iterator(mRepositoryFolderName + "\\manifests\\")) {
-        if (std::atoi(p.path().filename().string().c_str()) > std::atoi(latest.c_str())) {}
-        latest = p.path().filename().string();
+        string file = p.path().filename().string();
+        int cutOffLocation = file.find(".");
+        file = file.substr(0, cutOffLocation);
+        if (atoll(file.c_str()) > atoll(latest.c_str())) {
+            previous = latest;
+            latest = file;
+        }
     }
-    return latest;
+    return (previous == "0" ? "none" : (previous + ".txt"));
 }
 
 /*

@@ -100,7 +100,7 @@ void Repository::CheckOut(string src, string target, string manFileName) {
 	}
 	//READING into manifest file
     string line;
-	string manifestLocation = src + "\\manifests\\" + ((manFileName == "") ? GetPrevManifest(src) : (manFileName + ".txt"));
+	string manifestLocation = src + "\\manifests\\" + manFileName+ ".txt";
 	if (!filesystem::exists(manifestLocation)) {
 		cout << "Manifest doesn't exist" << endl;
 		return;
@@ -263,16 +263,4 @@ const string Repository::GetFileLocation(string rootPath, string filePath) const
     return finalPath;
 }
 
-//Prints out a nicely formated tree layout of the directory. Used for Manifest.
-void Repository::PrintStructure(ofstream os, string dir) {
-    filesystem::path c_path = dir;
-    os << c_path.filename() << endl;
-    int depth = 1;
-    for (auto &p : filesystem::directory_iterator(c_path)) {
 
-    }
-}
-
-void Repository::PrintStructure(ofstream os, filesystem::path dir, int depth) {
-
-}

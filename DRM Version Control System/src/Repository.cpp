@@ -70,7 +70,7 @@ void Repository::CheckIn(string src, string target) {
                 }
                 // new file is found. create a new subdirectory and new artifact in the repo
                 if (isNewFile) {
-                    string newFilePath = GetRepoPath(src, target, filePath);
+                    string newFilePath = GetRepositoryPath(src, target, filePath);
                     filesystem::path path = newFilePath;
                     string repositoryProjectTreeFileLocation = path.parent_path().parent_path().string() + GetFileLocation(src, filePath); // Location of where to place the file in repository's project tree
                     filesystem::create_directories(newFilePath); // Create folders for the files in the repository.
@@ -110,7 +110,8 @@ void Repository::CheckOut(string src, string target, string manFileName) {
 	filesystem::create_directories(target);
 	while (getline(input, line))
 	{
-		if (line.find("#") == string::npos) { // Tries to find "#" in the line. If it doesn't, it's true and the loop continues.
+        string test = line.substr(0, 1);
+        if (line.substr(0, 1).compare("#") != 0 && line.substr(0, 1).compare("@") != 0) { // Tries to find "#" or "@" at the beginning of a line. We need to find non-"#/@" containing lines to extract the paths.
 			if ((line.find("Artifact ID") != string::npos) && (line.find("\\") != string::npos)) { // Found a line containing paths to files.
                 string sourcePath, targetPath, targetDirectory;
                 int cutOffLocation = line.find(" | ") - line.find("\\"); // Needed to cut off " | Artifact ID: ~~~~"... We find the location of " | " and then the location of the first "\", and subtract them.
@@ -133,7 +134,7 @@ void Repository::CheckOut(string src, string target, string manFileName) {
         filesystem::create_directories(manifestDirectory);
 		filesystem::copy_file(manifestLocation, newManifestLocation, filesystem::copy_options::overwrite_existing); //copying source manifest to target manifest if not exists
 	}
-    CreateManifest(target, target + "\\" + mRepositoryFolderName, "# Previous Project Tree Location: " + filesystem::current_path().string());
+    CreateManifest(target, target + "\\" + mRepositoryFolderName, "@ Previous Project Tree Location: " + filesystem::current_path().string());
     cout << endl;
 }
 void Repository::CreateRepository(const string s) {
@@ -160,7 +161,7 @@ void Repository::CreateProjectTree() const {
         }
         if (filesystem::is_regular_file(p)) {
             string filePath = p.path().string(); // Location of where the repository is stored.
-            string destination = GetRepoPath(currentPath.string(), repositoryPath, filePath);
+            string destination = GetRepositoryPath(currentPath.string(), repositoryPath, filePath);
             filesystem::create_directories(destination); // Create folders for the files in the repository.
             destination = destination + "\\" + CheckSum(filePath); // Update destination to include checksum. This will rename the file to that checksum.
             filesystem::copy_file(filePath, destination, filesystem::copy_options::overwrite_existing); // Copies over the file to its respective repository folder.
@@ -179,7 +180,7 @@ void Repository::CreateManifest(string directory, string repoPath, string words)
     // Initial Manifest file writing - path & time
     output << "# Project Tree Path: " << directory << endl;
     output << "# Check-in date: " << date[0] << endl;
-    output << "# Previous Manifest: " << GetPrevManifest(repoPath) << endl;
+    output << "# Previous Manifest: " << GetPreviousManifest(repoPath) << endl;
     output << words << endl; // Custom messages here.
     
     string currentDirectoryName = (directory.find("\\") ? (directory.substr(directory.find_last_of("\\") + 1)) : directory);
@@ -226,7 +227,7 @@ const vector<string> Repository::DateStamp() const {
 }
 
 //Retrieves the name of the previous manifest file.
-const string Repository::GetPrevManifest(string repopath) const {
+const string Repository::GetPreviousManifest(string repopath) const {
     string latest = "0";
     string previous = "";
     for (auto& p : filesystem::directory_iterator(repopath + "\\manifests\\")) {
@@ -245,7 +246,7 @@ const string Repository::GetPrevManifest(string repopath) const {
 **This retrieves the path relative to the the repo folder.
 **From C:\\..\ptree\example , will return C:\\..\repo\example
 */
-const string Repository::GetRepoPath(string ptreepath, string repopath, string filePath) const {
+const string Repository::GetRepositoryPath(string ptreepath, string repopath, string filePath) const {
     filesystem::path ptree = ptreepath;
     string currentDirectoryName = ptree.filename().string();
     int cutOffLocation = filePath.find(currentDirectoryName) + currentDirectoryName.length(); // location where dir name is found.
@@ -263,4 +264,8 @@ const string Repository::GetFileLocation(string rootPath, string filePath) const
     return finalPath;
 }
 
+// Given the path to the manifest folder, finds and returns the path to the
+// previous project tree location (where it was checked out from) if any.
+const string Repository::GetPreviousProjectTreeLocation(string previousManifest) const {
 
+}

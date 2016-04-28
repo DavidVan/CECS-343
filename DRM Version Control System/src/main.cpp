@@ -7,8 +7,9 @@ using namespace std;
 void commandList() {
     cout << "List of available commands:" << endl <<
         "init" << endl <<
-        "add" << endl <<
-        "remove" << endl <<
+        "update" << endl <<
+        "checkin" << endl <<
+        "checkout" << endl <<
         "help" << endl;
 }
 
@@ -21,7 +22,7 @@ void runCommand(int argc, char* argv[], Repository* repository) {
     if (string(argv[1]) == "init") {
         repository->Initialize();
     }
-    if (string(argv[1]) == "update") {
+    else if (string(argv[1]) == "update") {
         repository->Update();
     }
 	else if (string(argv[1]) == "checkin") {
@@ -40,12 +41,6 @@ void runCommand(int argc, char* argv[], Repository* repository) {
             repository->CheckOut(argv[2], argv[3], argv[4]);
         }
 	}
-    else if (string(argv[1]) == "add") {
-        // Do something
-    }
-    else if (string(argv[1]) == "remove") {
-        // Do something
-    }
     else if (string(argv[1]) == "help") {
         commandList();
     }

@@ -18,9 +18,10 @@ private:
     void CreateManifest(std::string, std::string, std::string) const;
     const std::string CheckSum(const std::string) const;
     const std::vector<std::string> DateStamp() const;
-    const std::string GetPrevManifest(std::string) const;
-    const std::string GetRepoPath(std::string, std::string, std::string) const;
+    const std::string GetPreviousManifest(std::string) const;
+    const std::string GetRepositoryPath(std::string, std::string, std::string) const;
     const std::string GetFileLocation(std::string, std::string) const;
+    const std::string GetPreviousProjectTreeLocation(std::string) const;
 
 public:
     Repository();

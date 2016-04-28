@@ -267,5 +267,5 @@ const string Repository::GetFileLocation(string rootPath, string filePath) const
 // Given the path to the manifest folder, finds and returns the path to the
 // previous project tree location (where it was checked out from) if any.
 const string Repository::GetPreviousProjectTreeLocation(string previousManifest) const {
-
+	return "hi";
 }

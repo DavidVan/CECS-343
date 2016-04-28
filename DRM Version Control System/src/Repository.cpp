@@ -110,7 +110,6 @@ void Repository::CheckOut(string src, string target, string manFileName) {
 	filesystem::create_directories(target);
 	while (getline(input, line))
 	{
-        string test = line.substr(0, 1);
         if (line.substr(0, 1).compare("#") != 0 && line.substr(0, 1).compare("@") != 0) { // Tries to find "#" or "@" at the beginning of a line. We need to find non-"#/@" containing lines to extract the paths.
 			if ((line.find("Artifact ID") != string::npos) && (line.find("\\") != string::npos)) { // Found a line containing paths to files.
                 string sourcePath, targetPath, targetDirectory;
@@ -267,5 +266,15 @@ const string Repository::GetFileLocation(string rootPath, string filePath) const
 // Given the path to the manifest folder, finds and returns the path to the
 // previous project tree location (where it was checked out from) if any.
 const string Repository::GetPreviousProjectTreeLocation(string previousManifest) const {
-
+    string line;
+    for (auto& p : filesystem::directory_iterator(previousManifest)) {
+        ifstream input(p.path().parent_path().string() + "\\" + p.path().filename().string());
+        while (getline(input, line)) {
+            if (line.substr(0, 1).compare("@") == 0) {
+                return line.substr(line.find_first_of(":") + 1); // The result!
+            }
+        }
+        input.close();
+    }
+    return ""; // Empty string.
 }

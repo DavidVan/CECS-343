@@ -137,6 +137,17 @@ void Repository::CheckOut(string src, string target, string manFileName) {
     CreateManifest(target, target + "\\" + mRepositoryFolderName, "@ Previous Project Tree Location: " + filesystem::current_path().string());
     cout << endl;
 }
+
+/*
+@Param: src = repository path , target = ptree location, manFileName = manifest file name  
+Merge the changes of a repository's version to a project tree using the specified manifest.
+If no target is specified, it will assume target is the current directory (CD'ed location).
+Merge will simply supply the files needed for merging, but won't do any actual merging.
+*/
+void Repository::Merge(string src, string target, string manFileName) {
+
+}
+
 void Repository::CreateRepository(const string s) {
     // Create the directory.
     filesystem::create_directory(s);
@@ -226,7 +237,7 @@ const vector<string> Repository::DateStamp() const {
     return date;
 }
 
-//Retrieves the name of the previous manifest file.
+//Retrieves the name of the previous manifest file in the given repopath.
 const string Repository::GetPreviousManifest(string repopath) const {
     string latest = "0";
     string previous = "";
@@ -240,6 +251,18 @@ const string Repository::GetPreviousManifest(string repopath) const {
         }
     }
     return (previous == "0" ? "none" : (previous + ".txt"));
+}
+/*Retrieves the latest manifest file with the manifest folder as the parameter*/
+const string Repository::GetLatestManifest(string manifestfolder) const {
+	string latest = "none";
+	for (auto& p : filesystem::directory_iterator(manifestfolder)) {
+		if (std::atoi(p.path().filename().string().c_str()) > std::atoi(latest.c_str())) {}
+		latest = p.path().filename().string();
+	}
+	return latest;
+}
+const string Repository::ReadPrevManifest(string manfile) const{
+	return "";
 }
 
 /*
@@ -268,4 +291,61 @@ const string Repository::GetFileLocation(string rootPath, string filePath) const
 // previous project tree location (where it was checked out from) if any.
 const string Repository::GetPreviousProjectTreeLocation(string previousManifest) const {
 	return "hi";
+}
+
+// Retrieves the "grandpa" file location of the repo and the given project tree. 
+const  string Repository::GetGrandpa(string src, string target)const{
+	string manipath= "//repo343//manifests";
+	string currentSrc = src + manipath;
+	string currentTarget = target + manipath;
+
+	string latestSrcManifest = GetLatestManifest(currentSrc);
+	string latestTargetManifest = GetLatestManifest(currentTarget);
+
+	while (GetPreviousProjectTreeLocation(currentSrc) != "none" && GetPreviousProjectTreeLocation(currentTarget) != "none") {
+		if (latestSrcManifest.compare(latestTargetManifest) == 0) {
+			return latestSrcManifest.filename();
+		}
+		if (latestSrcManifest.string() == "none" && latestTargetManifest.string() != "none") {
+			latestSrc = GetLatestManifest(src + manipath);
+			latestTarget = ReadPrevManifest(currentSrc);
+		}
+		if (latestTarget == "none" && latestSrc != "none") {
+			latestTarget = GetLatestManifest(target + manipath);
+			latestSrc = ReadPrevManifest();
+
+		}
+	}
+	/* PSEUDOCODE
+	initialize curSrcLocation (will change when it hits end of man dir) and curTargetLocation
+	initialize latestsrc & latesttarget(helper method will be made for this)
+	while repo's  && ptree's previous ptree location != "none" && their getPrevManFile!= "none")
+		create full length paths for latestsrc and latesttarget
+		if latestsrc == latesttarget
+			return latestsrc (path)
+
+		if latestsrc == "none" && latestarget != "none"
+			reset latestsrc = getlatestmanfile (src)
+			latesttarget = getprevmanfile (latesttarget)
+		else if (latestsrc !=none && latesttarget =="none")
+			reset latesttarget = getlatestmanfile (target)
+			latestsrs = getprevmanfile (latestsrc)
+
+		if latestsrc > latesttarget
+			if (getPrevPtreeLoc (latestsrc) !=none)
+				curSrcLocation = getPrevPtreeLoc (latestsrc)
+				latestsrc = getlatestmanfile (curSrcLocation)
+			else
+				latestscc = getpreviousmanifest(latestsrc full path)
+
+		if latestsrc < latesttarget
+			if (getPrevPtreeLoc (latesttarget) !=none)
+				curTargetLocation = getPrevPtreeLoc (latesttarget)
+				latestTarget = getlatestmanfile (curTargetLocation)
+			else
+				latestTarget = getpreviousmanifest(latestTarget full path)
+
+	*/
+	
+	return "grandpapath";
 }

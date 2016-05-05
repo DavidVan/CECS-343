@@ -41,6 +41,14 @@ void runCommand(int argc, char* argv[], Repository* repository) {
             repository->CheckOut(argv[2], argv[3], argv[4]);
         }
 	}
+	else if (string(argv[1]) == "merge") {
+		if (argv[4] == nullptr) { // will set target location as cd location. 
+			repository->Merge("", argv[2], argv[3]);
+		}
+		else {
+			repository->Merge(argv[2], argv[3], argv[4]);
+		}
+	}
     else if (string(argv[1]) == "help") {
         commandList();
     }

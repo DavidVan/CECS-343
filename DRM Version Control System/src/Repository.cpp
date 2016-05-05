@@ -110,7 +110,6 @@ void Repository::CheckOut(string src, string target, string manFileName) {
 	filesystem::create_directories(target);
 	while (getline(input, line))
 	{
-        string test = line.substr(0, 1);
         if (line.substr(0, 1).compare("#") != 0 && line.substr(0, 1).compare("@") != 0) { // Tries to find "#" or "@" at the beginning of a line. We need to find non-"#/@" containing lines to extract the paths.
 			if ((line.find("Artifact ID") != string::npos) && (line.find("\\") != string::npos)) { // Found a line containing paths to files.
                 string sourcePath, targetPath, targetDirectory;
@@ -287,10 +286,32 @@ const string Repository::GetFileLocation(string rootPath, string filePath) const
     return finalPath;
 }
 
-// Given the path to the manifest folder, finds and returns the path to the
+// Given the path to the manifest folder or manifest file, finds and returns the path to the
 // previous project tree location (where it was checked out from) if any.
 const string Repository::GetPreviousProjectTreeLocation(string previousManifest) const {
-	return "hi";
+    string line;
+    if (previousManifest.find(".txt") == string::npos) { // A file name was passed in instead.
+        for (auto& p : filesystem::directory_iterator(previousManifest)) {
+            ifstream input(p.path().parent_path().string() + "\\" + p.path().filename().string());
+            while (getline(input, line)) {
+                if (line.substr(0, 1).compare("@") == 0) {
+                    return line.substr(line.find_first_of(":") + 2); // The result!
+                }
+            }
+            input.close();
+        }
+    }
+    else {
+        filesystem::path p = previousManifest;
+        ifstream input(p.parent_path().string() + "\\" + p.filename().string());
+        while (getline(input, line)) {
+            if (line.substr(0, 1).compare("@") == 0) {
+                return line.substr(line.find_first_of(":") + 2); // The result!
+            }
+        }
+        input.close();
+    }
+    return ""; // Empty string.
 }
 
 // Retrieves the "grandpa" file location of the repo and the given project tree. 
@@ -306,7 +327,7 @@ const  string Repository::GetGrandpa(string src, string target)const{
 		if (latestSrcManifest.compare(latestTargetManifest) == 0) {
 			//return latestSrcManifest.filename();
 		}
-		if (latestSrcManifest == "none" && latestTargetManifest.string() != "none") {
+		if (latestSrcManifest == "none" && latestTargetManifest != "none") {
 			//latestSrc = GetLatestManifest(src + manipath);
 			//latestTarget = ReadPrevManifest(currentSrc);
 		}

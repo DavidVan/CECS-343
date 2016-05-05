@@ -304,15 +304,15 @@ const  string Repository::GetGrandpa(string src, string target)const{
 
 	while (GetPreviousProjectTreeLocation(currentSrc) != "none" && GetPreviousProjectTreeLocation(currentTarget) != "none") {
 		if (latestSrcManifest.compare(latestTargetManifest) == 0) {
-			return latestSrcManifest.filename();
+			//return latestSrcManifest.filename();
 		}
-		if (latestSrcManifest.string() == "none" && latestTargetManifest.string() != "none") {
-			latestSrc = GetLatestManifest(src + manipath);
-			latestTarget = ReadPrevManifest(currentSrc);
+		if (latestSrcManifest == "none" && latestTargetManifest.string() != "none") {
+			//latestSrc = GetLatestManifest(src + manipath);
+			//latestTarget = ReadPrevManifest(currentSrc);
 		}
-		if (latestTarget == "none" && latestSrc != "none") {
-			latestTarget = GetLatestManifest(target + manipath);
-			latestSrc = ReadPrevManifest();
+		if (latestTargetManifest == "none" && latestSrcManifest != "none") {
+			latestTargetManifest = GetLatestManifest(target + manipath);
+			//latestSrcManifest = ReadPrevManifest();
 
 		}
 	}

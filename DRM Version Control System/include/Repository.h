@@ -14,7 +14,7 @@ private:
     const std::string mRepositoryFolderName;
 
     void CreateRepository(const std::string);
-    void CreateProjectTree() const;
+    void CreateProjectTree(std::string) const;
     void CreateManifest(std::string, std::string, std::string) const;
     const std::string CheckSum(const std::string) const;
     const std::vector<std::string> DateStamp() const;

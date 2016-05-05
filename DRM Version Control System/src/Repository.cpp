@@ -27,13 +27,13 @@ void Repository::Initialize() {
         CreateRepository(mRepositoryFolderName); // Creates repository folder with name specified in header file.
         cout << endl << "Repository created." << endl;
     }
-    CreateProjectTree();
+    CreateProjectTree(filesystem::current_path().string());
     CreateManifest(filesystem::current_path().string(), mRepositoryFolderName, "");
 }
 
 void Repository::Update() {
     cout << "Updating repository." << endl;
-    CreateProjectTree();
+    CreateProjectTree(filesystem::current_path().string());
     CreateManifest(filesystem::current_path().string(), mRepositoryFolderName, "");
 }
 
@@ -133,6 +133,7 @@ void Repository::CheckOut(string src, string target, string manFileName) {
         filesystem::create_directories(manifestDirectory);
 		filesystem::copy_file(manifestLocation, newManifestLocation, filesystem::copy_options::overwrite_existing); //copying source manifest to target manifest if not exists
 	}
+    CreateProjectTree(target);
     CreateManifest(target, target + "\\" + mRepositoryFolderName, "@ Previous Project Tree Location: " + filesystem::current_path().string());
     cout << endl;
 }
@@ -154,9 +155,9 @@ void Repository::CreateRepository(const string s) {
     filesystem::create_directory(s + "\\manifests");
 }
 
-void Repository::CreateProjectTree() const {
+void Repository::CreateProjectTree(string path) const {
 
-    filesystem::path currentPath = filesystem::current_path();
+    filesystem::path currentPath = path;
     // name of the directory you cd into
     string currentDirectoryName = currentPath.filename().string();
     // This will be the current path of the repository.

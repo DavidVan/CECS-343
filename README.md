@@ -91,7 +91,7 @@ BUGS:
 
 No error handling.
 Linux version does not work and was not tested; also we hardcoded Windows path
-endings... (/ vs \) Whoops.
+endings... (/ vs \\) Whoops.
 
 Remaining bugs:
 

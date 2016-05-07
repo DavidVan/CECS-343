@@ -185,33 +185,33 @@ void Repository::Merge(string source, string target, string manifestVersion) {
                 }
                 else { // There was a version of it already... Check for conflicts.
                     if (CheckSum(sourcePath).compare(CheckSum(targetPath)) != 0) { // They are NOT the same file. It was changed...
-                        string file_MT = targetPath.substr(0, targetPath.find(".")) + "_MT" + targetPath.substr(targetPath.find("."));
-                        string file_MR = targetPath.substr(0, targetPath.find(".")) + "_MR" + targetPath.substr(targetPath.find("."));
+                        string file_MT = targetPath.substr(0, targetPath.find(".")) + "_MT" + targetPath.substr(targetPath.find(".")); // Appends MT to file name.
+                        string file_MR = targetPath.substr(0, targetPath.find(".")) + "_MR" + targetPath.substr(targetPath.find(".")); // Appends MR to file name.
+                        string file_MG = targetPath.substr(0, targetPath.find(".")) + "_MG" + targetPath.substr(targetPath.find(".")); // Appends MG to file name.
                         filesystem::path tempPath = source;
                         string grandpaManifest = GetGrandpa(tempPath.parent_path().string(), target);
-                        string grandpaFile = ""; // Still needs work. Need to get grandpa artifact path.
+                        string grandpaFile = "";
                         string anotherLine = "";
                         ifstream anotherInput(grandpaManifest);
                         while (getline(anotherInput, anotherLine))
                         {
                             if (anotherLine.substr(0, 1).compare("#") != 0 && anotherLine.substr(0, 1).compare("@") != 0) { // Tries to find "#" or "@" at the beginning of a line. We need to find non-"#/@" containing lines to extract the paths.
                                 if ((anotherLine.find("Artifact ID") != string::npos) && (anotherLine.find("\\") != string::npos)) { // Found a line containing paths to files.
-                                    string sourceFile = anotherLine.substr(anotherLine.find("\\"));
-                                    string targetFile = line.substr(line.find("\\"));
-                                    sourceFile = sourceFile.substr(0, sourceFile.find("|") - 1);
-                                    targetFile = targetFile.substr(0, targetFile.find("|") - 1);
+                                    string sourceFile = anotherLine.substr(anotherLine.find("\\")); // Parsing the lines.
+                                    string targetFile = line.substr(line.find("\\")); // Parsing the lines.
+                                    sourceFile = sourceFile.substr(0, sourceFile.find("|") - 1); // Formatting it further.
+                                    targetFile = targetFile.substr(0, targetFile.find("|") - 1); // Formatting it further.
                                     if (sourceFile.compare(targetFile) == 0) { // We're working with the same file here.
-                                        string unfinishedLine = mRepositoryFolderName + anotherLine.substr(anotherLine.find("\\"));
-                                        string grandpaFileNoAID = unfinishedLine.substr(0, unfinishedLine.find("|") - 1);
-                                        int AIDLocation = unfinishedLine.find_last_of(":");
-                                        string AID = unfinishedLine.substr(AIDLocation + 2);
-                                        grandpaFile = target + "\\" + grandpaFileNoAID + "\\" + AID;
+                                        string unfinishedLine = mRepositoryFolderName + anotherLine.substr(anotherLine.find("\\")); // Formatting it further.
+                                        string grandpaFileNoAID = unfinishedLine.substr(0, unfinishedLine.find("|") - 1); // Formatting it further.
+                                        int AIDLocation = unfinishedLine.find_last_of(":"); // Helps me format it.
+                                        string AID = unfinishedLine.substr(AIDLocation + 2); // Formatting it further.
+                                        grandpaFile = target + "\\" + grandpaFileNoAID + "\\" + AID; // Final product.
                                     }
                                 }
                             }
                         }
                         anotherInput.close();
-                        string file_MG = targetPath.substr(0, targetPath.find(".")) + "_MG" + targetPath.substr(targetPath.find(".")); // Then give artifact a name. The path has to be to the target folder.
                         filesystem::rename(targetPath, file_MT); // File from tree
                         filesystem::copy_file(sourcePath, file_MR, filesystem::copy_options::overwrite_existing); // File from source repo
                         filesystem::copy_file(grandpaFile, file_MG, filesystem::copy_options::overwrite_existing); // File from common mom/grandpa

@@ -24,6 +24,8 @@ simplifying assumptions in order to get to working software quickly.
 
 Usage:
 
+Usage:
+
 Initialize repository: drm init
 Update repository: drm update
 Check in: drm checkin <updated tree> <repo - where to store changes>
@@ -32,6 +34,14 @@ drm checkin <repo - where to store changes>
 Check out: drm checkout <project tree> <where to store the copy of the tree> <version>
 OR
 drm checkout <where to store the copy of the tree> <version>
+Merge: drm merge <updated tree> <target tree - where it should merge to> <version>
+OR
+drm merge <updated tree> <version>
+
+Example:
+Check in: drm checkin "C:\Changed Tree" "C:\Original Tree"
+Check out: drm checkout "C:\Original Tree" "C:\New Tree" "20160504201929"
+Merge: drm merge "C:\Changed Tree" "C:\New Tree" "20160504201950"
 
 --------------------------------------------------------------------------------
 
@@ -80,6 +90,8 @@ For other commands, please read above.
 BUGS:
 
 No error handling.
+Linux version does not work and was not tested; also we hardcoded Windows path
+endings... (/ vs \) Whoops.
 
 Remaining bugs:
 

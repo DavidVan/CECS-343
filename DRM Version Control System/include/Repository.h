@@ -25,6 +25,7 @@ private:
     const std::string GetPreviousProjectTreeLocation(std::string) const;
     const std::string GetGrandpa(std::string, std::string) const;
     const int CompareManifestName(std::string, std::string) const;
+	const void CopyAppend(std::string, std::string, std::string, std::string) const;
 
 public:
     Repository();

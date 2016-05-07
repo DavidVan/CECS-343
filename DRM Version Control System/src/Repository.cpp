@@ -38,28 +38,28 @@ void Repository::Update() {
 }
 
 /*
-@Param: src = project tree folder ; target = repository folder
+@Param: source = project tree folder ; target = repository folder
 check in will update repository folder with new files/folders from the project tree directory.
 Manifest will be updated as well.
 */
-void Repository::CheckIn(string src, string target) {
+void Repository::CheckIn(string source, string target) {
     if (target == "") {
         target = filesystem::current_path().string() + "\\" + mRepositoryFolderName;
     }
-    for (auto &p : filesystem::recursive_directory_iterator(src)) { // Go through the project tree folder and check for updated/new files.
+    for (auto &p : filesystem::recursive_directory_iterator(source)) { // Go through the project tree folder and check for updated/new files.
         string  filePath = p.path().string();
         if (filesystem::is_regular_file(p)) {
             if (filePath.find(mRepositoryFolderName) == string::npos) {	// Excludes the project tree's repository folder from the iteration.
                 bool isNewFile = true;
                 for (auto &r : filesystem::recursive_directory_iterator(target)) { // Iterates through the repository folder
                     if (filesystem::is_directory(r)) {
-                        string test1 = GetFileLocation(src, p.path().string());
+                        string test1 = GetFileLocation(source, p.path().string());
                         string test2 = GetFileLocation(target, r.path().string());
-                        if (GetFileLocation(src, p.path().string()).compare(GetFileLocation(target, r.path().string())) == 0) { // File already exists in repository. Update repository with project tree's version.
+                        if (GetFileLocation(source, p.path().string()).compare(GetFileLocation(target, r.path().string())) == 0) { // File already exists in repository. Update repository with project tree's version.
                             isNewFile = false;
                             string artifact = r.path().string() + "\\" + CheckSum(filePath);  // the theoretical file path of the updated file's artifact
                             if (!filesystem::exists(artifact)) { // If this file does not exist in the repository...
-                                string repositoryProjectTreeFileLocation = r.path().parent_path().parent_path().string() + GetFileLocation(src, filePath); // Location of where to place the file in repository's project tree
+                                string repositoryProjectTreeFileLocation = r.path().parent_path().parent_path().string() + GetFileLocation(source, filePath); // Location of where to place the file in repository's project tree
                                 filesystem::copy_file(filePath, artifact, filesystem::copy_options::overwrite_existing); // Copy it over to the repository.
                                 filesystem::copy_file(artifact, repositoryProjectTreeFileLocation, filesystem::copy_options::overwrite_existing); // Now copy it to repository's project tree.
                                 cout << "File updated: " << p.path().filename() << endl;
@@ -70,9 +70,9 @@ void Repository::CheckIn(string src, string target) {
                 }
                 // new file is found. create a new subdirectory and new artifact in the repo
                 if (isNewFile) {
-                    string newFilePath = GetRepositoryPath(src, target, filePath);
+                    string newFilePath = GetRepositoryPath(source, target, filePath);
                     filesystem::path path = newFilePath;
-                    string repositoryProjectTreeFileLocation = path.parent_path().parent_path().string() + GetFileLocation(src, filePath); // Location of where to place the file in repository's project tree
+                    string repositoryProjectTreeFileLocation = path.parent_path().parent_path().string() + GetFileLocation(source, filePath); // Location of where to place the file in repository's project tree
                     filesystem::create_directories(newFilePath); // Create folders for the files in the repository.
                     newFilePath = newFilePath + "\\" + CheckSum(filePath); // Update filepath to include checksum. This will rename the file to that checksum.
                     filesystem::copy_file(filePath, newFilePath); // Copies over the file to its respective repository folder.
@@ -83,15 +83,15 @@ void Repository::CheckIn(string src, string target) {
             }
         }
     }
-    CreateManifest(src, target, "# Check In Location: " + target); // updates manifest file
+    CreateManifest(source, target, "# Check In Location: " + target); // updates manifest file
     cout << "Check-In completed." << endl;
 }
 
-void Repository::CheckOut(string src, string target, string manFileName) {
-    if (src == "") {
-        src = filesystem::current_path().string() + "\\" + mRepositoryFolderName;
+void Repository::CheckOut(string source, string target, string manifestVersion) {
+    if (source == "") {
+        source = filesystem::current_path().string() + "\\" + mRepositoryFolderName;
     }
-    if (!filesystem::exists(src) || !filesystem::is_directory(src)) {
+    if (!filesystem::exists(source) || !filesystem::is_directory(source)) {
         cout << "Source doesn't exist or is not a directory." << endl;
         return;
     }
@@ -99,9 +99,9 @@ void Repository::CheckOut(string src, string target, string manFileName) {
         cout << "Target is not a directory." << endl;
         return;
     }
-    //READING into manifest file
+    // Read manifest file
     string line;
-    string manifestLocation = src + "\\manifests\\" + manFileName + ".txt";
+    string manifestLocation = source + "\\manifests\\" + manifestVersion + ".txt";
     if (!filesystem::exists(manifestLocation)) {
         cout << "Manifest doesn't exist" << endl;
         return;
@@ -115,41 +115,70 @@ void Repository::CheckOut(string src, string target, string manFileName) {
             if ((line.find("Artifact ID") != string::npos) && (line.find("\\") != string::npos)) { // Found a line containing paths to files.
                 string sourcePath, targetPath, targetDirectory;
                 int cutOffLocation = line.find(" | ") - line.find("\\"); // Needed to cut off " | Artifact ID: ~~~~"... We find the location of " | " and then the location of the first "\", and subtract them.
-                sourcePath = src + line.substr(line.find("\\"), cutOffLocation) + "\\" + line.substr(line.find_last_of(" ") + 1);
+                sourcePath = source + line.substr(line.find("\\"), cutOffLocation) + "\\" + line.substr(line.find_last_of(" ") + 1);
                 targetPath = target + line.substr(line.find("\\"), cutOffLocation);
                 int directoryCutOffLocation = targetPath.length() + (targetPath.find_last_of("\\") - targetPath.length());
                 targetDirectory = targetPath.substr(0, directoryCutOffLocation);
-                filesystem::create_directories(targetDirectory);
+                filesystem::create_directories(targetDirectory); // Make sure the directory exists by making it.
                 cout << "Copying to: " << targetPath << endl;
                 filesystem::copy_file(sourcePath, targetPath, filesystem::copy_options::overwrite_existing);
             }
         }
     }
     input.close();
-    //END READING TO MANIFEST
-    string newManifestLocation = target + "\\" + mRepositoryFolderName + "\\manifests\\" + manFileName + ".txt";
+    // End reading
+    string newManifestLocation = target + "\\" + mRepositoryFolderName + "\\manifests\\" + manifestVersion + ".txt";
     if (!filesystem::exists(newManifestLocation)) {
         int directoryCutOffLocation = newManifestLocation.length() + (newManifestLocation.find_last_of("\\") - newManifestLocation.length());
         string manifestDirectory = newManifestLocation.substr(0, directoryCutOffLocation);
         filesystem::create_directories(manifestDirectory);
         filesystem::copy_file(manifestLocation, newManifestLocation, filesystem::copy_options::overwrite_existing); //copying source manifest to target manifest if not exists
     }
-    CreateManifest(target, target + "\\" + mRepositoryFolderName, "@ Previous Project Tree Location: " + src);
+    CreateManifest(target, target + "\\" + mRepositoryFolderName, "@ Previous Project Tree Location: " + source);
     cout << endl;
 }
 
 /*
-@Param: src = repository path , target = ptree location, manFileName = manifest file name
+@Param: source = repository path , target = ptree location, manifestVersion = manifest file name from source
 Merge the changes of a repository's version to a project tree using the specified manifest.
 If no target is specified, it will assume target is the current directory (CD'ed location).
 Merge will simply supply the files needed for merging, but won't do any actual merging.
 */
-void Repository::Merge(string src, string target, string manFileName) {
+void Repository::Merge(string source, string target, string manifestVersion) {
     if (target == "") {
         target = filesystem::current_path().string();
     }
-
-    cout << GetGrandpa(src, target) << endl;
+    string line = "";
+    string manifestLocation = source + "\\manifests\\" + manifestVersion + ".txt";
+    ifstream input(manifestLocation);
+    while (getline(input, line))
+    {
+        if (line.substr(0, 1).compare("#") != 0 && line.substr(0, 1).compare("@") != 0) { // Tries to find "#" or "@" at the beginning of a line. We need to find non-"#/@" containing lines to extract the paths.
+            if ((line.find("Artifact ID") != string::npos) && (line.find("\\") != string::npos)) { // Found a line containing paths to files.
+                string sourcePath, targetPath, targetDirectory;
+                int cutOffLocation = line.find(" | ") - line.find("\\"); // Needed to cut off " | Artifact ID: ~~~~"... We find the location of " | " and then the location of the first "\", and subtract them.
+                sourcePath = source + line.substr(line.find("\\"), cutOffLocation) + "\\" + line.substr(line.find_last_of(" ") + 1);
+                targetPath = target + line.substr(line.find("\\"), cutOffLocation);
+                int directoryCutOffLocation = targetPath.length() + (targetPath.find_last_of("\\") - targetPath.length());
+                targetDirectory = targetPath.substr(0, directoryCutOffLocation);
+                filesystem::create_directories(targetDirectory); // Make sure the directory exists by making it.
+                cout << "Copying to: " << targetPath << endl;
+                if (!filesystem::exists(targetPath)) { // If the file does not exist, copy it over.
+                    filesystem::copy_file(sourcePath, targetPath, filesystem::copy_options::overwrite_existing);
+                }
+                else { // There was a version of it already... Check for conflicts.
+                    if (CheckSum(sourcePath).compare(CheckSum(targetPath)) != 0) { // They are NOT the same file. It was changed...
+                        string source_MT = ""; // Find a way to change, for example, C:\test\test.txt to C:\test\test_MT.txt
+                        string target_MR = ""; // Find a way to change, for example, C:\test\test.txt to C:\test\test_MR.txt
+                        string source_MG = ""; // Find a way to change, for example, C:\test\test.txt to C:\test\test_MG.txt
+                        filesystem::copy_file(sourcePath, source_MT, filesystem::copy_options::overwrite_existing);
+                    }
+                }
+            }
+        }
+    }
+    input.close();
+    //cout << GetGrandpa(source, target) << endl;
 }
 
 void Repository::CreateRepository(const string s) {

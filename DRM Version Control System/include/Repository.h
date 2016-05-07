@@ -19,21 +19,12 @@ private:
     const std::string CheckSum(const std::string) const;
     const std::vector<std::string> DateStamp() const;
     const std::string GetPreviousManifest(std::string) const;
-<<<<<<< HEAD
     const std::string GetLatestManifest(std::string) const;
     const std::string GetRepositoryPath(std::string, std::string, std::string) const;
     const std::string GetFileLocation(std::string, std::string) const;
     const std::string GetPreviousProjectTreeLocation(std::string) const;
     const std::string GetGrandpa(std::string, std::string) const;
     const int CompareManifestName(std::string, std::string) const;
-=======
-	const std::string GetLatestManifest(std::string) const;
-    const std::string GetRepositoryPath(std::string, std::string, std::string) const;
-    const std::string GetFileLocation(std::string, std::string) const;
-    const std::string GetPreviousProjectTreeLocation(std::string) const;
-	const std::string GetGrandpa(std::string, std::string) const;
-	const int CompareManifestName(std::string, std::string) const;
->>>>>>> a3213531cb75a60e76212398594bd960e02244a1
 
 public:
     Repository();

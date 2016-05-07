@@ -145,11 +145,7 @@ If no target is specified, it will assume target is the current directory (CD'ed
 Merge will simply supply the files needed for merging, but won't do any actual merging.
 */
 void Repository::Merge(string src, string target, string manFileName) {
-    << << << < HEAD
         cout << GetGrandpa(src, target) << endl;
-    == == == =
-        cout << GetGrandpa(src, target) << endl;
-    >> >> >> > a3213531cb75a60e76212398594bd960e02244a1
 }
 
 void Repository::CreateRepository(const string s) {

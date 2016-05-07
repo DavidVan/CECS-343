@@ -164,8 +164,8 @@ void Repository::Merge(string source, string target, string manifestVersion) {
                 targetDirectory = targetPath.substr(0, directoryCutOffLocation);
                 filesystem::create_directories(targetDirectory); // Make sure the directory exists by making it.
                 if (!filesystem::exists(targetPath)) { // If the file does not exist, copy it over.
-                    filesystem::copy_file(sourcePath, targetPath, filesystem::copy_options::overwrite_existing);
                     filesystem::create_directories(targetDirectory); // Make sure the directory exists by making it.
+                    filesystem::copy_file(sourcePath, targetPath, filesystem::copy_options::overwrite_existing);
                 }
                 else { // There was a version of it already... Check for conflicts.
                     if (CheckSum(sourcePath).compare(CheckSum(targetPath)) != 0) { // They are NOT the same file. It was changed...

@@ -134,6 +134,7 @@ void Repository::CheckOut(string source, string target, string manifestVersion) 
         filesystem::create_directories(manifestDirectory);
         filesystem::copy_file(manifestLocation, newManifestLocation, filesystem::copy_options::overwrite_existing); //copying source manifest to target manifest if not exists
     }
+    CreateProjectTree(target);
     CreateManifest(target, target + "\\" + mRepositoryFolderName, "@ Previous Project Tree Location: " + source);
     cout << endl;
 }

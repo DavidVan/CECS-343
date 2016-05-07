@@ -164,7 +164,7 @@ void Repository::Merge(string source, string target, string manifestVersion) {
                 targetDirectory = targetPath.substr(0, directoryCutOffLocation);
                 filesystem::create_directories(targetDirectory); // Make sure the directory exists by making it.
                 if (!filesystem::exists(targetPath)) { // If the file does not exist, copy it over.
-                    //filesystem::copy_file(sourcePath, targetPath, filesystem::copy_options::overwrite_existing);
+                    filesystem::copy_file(sourcePath, targetPath, filesystem::copy_options::overwrite_existing);
                 }
                 else { // There was a version of it already... Check for conflicts.
                     if (CheckSum(sourcePath).compare(CheckSum(targetPath)) != 0) { // They are NOT the same file. It was changed...
@@ -178,18 +178,26 @@ void Repository::Merge(string source, string target, string manifestVersion) {
                         while (getline(anotherInput, anotherLine))
                         {
                             if (anotherLine.substr(0, 1).compare("#") != 0 && anotherLine.substr(0, 1).compare("@") != 0) { // Tries to find "#" or "@" at the beginning of a line. We need to find non-"#/@" containing lines to extract the paths.
-                                string test = line;
-                                if ((anotherLine.find(line) != string::npos) /* <-- needs work */ && (anotherLine.find("Artifact ID") != string::npos) && (anotherLine.find("\\") != string::npos)) { // Found a line containing paths to files.
-                                    int cutOffLocation = line.find(" | ") - line.find("\\"); // Needed to cut off " | Artifact ID: ~~~~"... We find the location of " | " and then the location of the first "\", and subtract them.
-                                    grandpaFile = source + line.substr(line.find("\\"), cutOffLocation) + "\\" + line.substr(line.find_last_of(" ") + 1);
+                                if ((anotherLine.find("Artifact ID") != string::npos) && (anotherLine.find("\\") != string::npos)) { // Found a line containing paths to files.
+                                    string sourceFile = anotherLine.substr(anotherLine.find("\\"));
+                                    string targetFile = line.substr(line.find("\\"));
+                                    sourceFile = sourceFile.substr(0, sourceFile.find("|") - 1);
+                                    targetFile = targetFile.substr(0, targetFile.find("|") - 1);
+                                    if (sourceFile.compare(targetFile) == 0) { // We're working with the same file here.
+                                        string unfinishedLine = mRepositoryFolderName + anotherLine.substr(anotherLine.find("\\"));
+                                        string grandpaFileNoAID = unfinishedLine.substr(0, unfinishedLine.find("|") - 1);
+                                        int AIDLocation = unfinishedLine.find_last_of(":");
+                                        string AID = unfinishedLine.substr(AIDLocation + 2);
+                                        grandpaFile = target + "\\" + grandpaFileNoAID + "\\" + AID;
+                                    }
                                 }
                             }
                         }
                         anotherInput.close();
-                        string file_MG = ""; // Then give artifact a name. The path has to be to the target folder.
-                        //filesystem::rename(targetPath, file_MT); // File from tree
-                        //filesystem::copy_file(sourcePath, file_MR, filesystem::copy_options::overwrite_existing); // File from source repo
-                        //filesystem::copy_file(grandpaFile, file_MG, filesystem::copy_options::overwrite_existing); // File from common mom/grandpa
+                        string file_MG = targetPath.substr(0, targetPath.find(".")) + "_MG" + targetPath.substr(targetPath.find(".")); // Then give artifact a name. The path has to be to the target folder.
+                        filesystem::rename(targetPath, file_MT); // File from tree
+                        filesystem::copy_file(sourcePath, file_MR, filesystem::copy_options::overwrite_existing); // File from source repo
+                        filesystem::copy_file(grandpaFile, file_MG, filesystem::copy_options::overwrite_existing); // File from common mom/grandpa
                     }
                 }
             }

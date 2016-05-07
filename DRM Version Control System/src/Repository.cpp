@@ -129,10 +129,40 @@ void Repository::Merge(string source, string target, string manifestVersion) {
     if (target == "") {
         target = filesystem::current_path().string();
     }
-	CopyAppend(source, target, manifestVersion, "");
-	CopyAppend(source, target, manifestVersion, "_MT");
-	CopyAppend(source, target, manifestVersion, "_MG");
-	CopyAppend(source, target, manifestVersion, "_MS");
+    string line = "";
+    string manifestLocation = source + "\\manifests\\" + manifestVersion + ".txt";
+    ifstream input(manifestLocation);
+    while (getline(input, line))
+    {
+        if (line.substr(0, 1).compare("#") != 0 && line.substr(0, 1).compare("@") != 0) { // Tries to find "#" or "@" at the beginning of a line. We need to find non-"#/@" containing lines to extract the paths.
+            if ((line.find("Artifact ID") != string::npos) && (line.find("\\") != string::npos)) { // Found a line containing paths to files.
+                string sourcePath, targetPath, targetDirectory;
+                int cutOffLocation = line.find(" | ") - line.find("\\"); // Needed to cut off " | Artifact ID: ~~~~"... We find the location of " | " and then the location of the first "\", and subtract them.
+                sourcePath = source + line.substr(line.find("\\"), cutOffLocation) + "\\" + line.substr(line.find_last_of(" ") + 1);
+                targetPath = target + line.substr(line.find("\\"), cutOffLocation);
+                int directoryCutOffLocation = targetPath.length() + (targetPath.find_last_of("\\") - targetPath.length());
+                targetDirectory = targetPath.substr(0, directoryCutOffLocation);
+                filesystem::create_directories(targetDirectory); // Make sure the directory exists by making it.
+                if (!filesystem::exists(targetPath)) { // If the file does not exist, copy it over.
+                    filesystem::copy_file(sourcePath, targetPath, filesystem::copy_options::overwrite_existing);
+                }
+                else { // There was a version of it already... Check for conflicts.
+                    if (CheckSum(sourcePath).compare(CheckSum(targetPath)) != 0) { // They are NOT the same file. It was changed...
+                        string file_MT = targetPath.substr(0 ,targetPath.find(".")) + "_MT" + targetPath.substr(targetPath.find(".")); // Find a way to change, for example, C:\test\test.txt to C:\test\test_MT.txt
+                        string file_MR = targetPath.substr(0, targetPath.find(".")) + "_MR" + targetPath.substr(targetPath.find(".")); // Find a way to change, for example, C:\test\test.txt to C:\test\test_MR.txt
+                        // Get the grandpa file (the path to the artifact!).
+                        string grandpaFile = "";
+                        string file_MG = targetPath.substr(0, targetPath.find(".")) + "_MG" + targetPath.substr(targetPath.find("."));; // Find a way to change, for example, C:\test\test.txt to C:\test\test_MG.txt
+                        filesystem::rename(targetPath, file_MT); // File from tree
+                        filesystem::copy_file(sourcePath, file_MR, filesystem::copy_options::overwrite_existing); // File from source repo
+                        filesystem::copy_file(grandpaFile, file_MG, filesystem::copy_options::overwrite_existing); // File from common mom/grandpa
+                    }
+                }
+            }
+        }
+    }
+    input.close();
+>>>>>>> upstream/master
     cout << GetGrandpa(source, target) << endl;
 }
 
@@ -370,31 +400,4 @@ const int Repository::CompareManifestName(string m1, string m2) const {
         return 1;
     }
     else return -1;
-}
-/*
-This is how we are doing the copy files from source to target with known manifest
-Takes in param source path, target path, source ManfileName, Append file name if any
-*/
-const void Repository::CopyAppend(string src, string target, string manFileName, string Name) const {
-	string line;
-	string manifestLocation = src + "\\manifests\\" + manFileName + ".txt";
-	ifstream input(manifestLocation);
-	while (getline(input, line))
-	{
-		if (line.substr(0, 1).compare("#") != 0 && line.substr(0, 1).compare("@") != 0) { // Tries to find "#" or "@" at the beginning of a line. We need to find non-"#/@" containing lines to extract the paths.
-			if ((line.find("Artifact ID") != string::npos) && (line.find("\\") != string::npos)) { // Found a line containing paths to files.
-				string sourcePath, targetPath, targetDirectory;
-				int cutOffLocation = line.find(" | ") - line.find("\\"); // Needed to cut off " | Artifact ID: ~~~~"... We find the location of " | " and then the location of the first "\", and subtract them.
-				sourcePath = src + line.substr(line.find("\\"), cutOffLocation) + "\\" + line.substr(line.find_last_of(" ") + 1);
-				targetPath = target + line.substr(line.find("\\"), cutOffLocation);
-				targetPath = targetPath.substr(0, targetPath.find(".")) + Name + targetPath.substr(targetPath.find("."));//Appends to name of target file or leaves it aloen
-				int directoryCutOffLocation = targetPath.length() + (targetPath.find_last_of("\\") - targetPath.length());
-				targetDirectory = targetPath.substr(0, directoryCutOffLocation);
-				filesystem::create_directories(targetDirectory);
-				cout << "Copying to: " << targetPath << endl;
-				filesystem::copy_file(sourcePath, targetPath, filesystem::copy_options::overwrite_existing);
-			}
-		}
-	}
-	input.close();
 }

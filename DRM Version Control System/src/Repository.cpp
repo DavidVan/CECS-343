@@ -168,17 +168,20 @@ void Repository::Merge(string source, string target, string manifestVersion) {
                 }
                 else { // There was a version of it already... Check for conflicts.
                     if (CheckSum(sourcePath).compare(CheckSum(targetPath)) != 0) { // They are NOT the same file. It was changed...
-                        string source_MT = ""; // Find a way to change, for example, C:\test\test.txt to C:\test\test_MT.txt
-                        string target_MR = ""; // Find a way to change, for example, C:\test\test.txt to C:\test\test_MR.txt
-                        string source_MG = ""; // Find a way to change, for example, C:\test\test.txt to C:\test\test_MG.txt
-                        filesystem::copy_file(sourcePath, source_MT, filesystem::copy_options::overwrite_existing);
+                        string file_MT = ""; // Find a way to change, for example, C:\test\test.txt to C:\test\test_MT.txt
+                        string file_MR = ""; // Find a way to change, for example, C:\test\test.txt to C:\test\test_MR.txt
+                        // Get the grandpa file.
+                        string file_MG = ""; // Find a way to change, for example, C:\test\test.txt to C:\test\test_MG.txt
+                        filesystem::copy_file(targetPath, file_MT, filesystem::copy_options::overwrite_existing); // File from source repo
+                        filesystem::copy_file(sourcePath, file_MR, filesystem::copy_options::overwrite_existing); // File from tree
+                        filesystem::copy_file(sourcePath, file_MG, filesystem::copy_options::overwrite_existing); // File from common mom/grandpa
                     }
                 }
             }
         }
     }
     input.close();
-    //cout << GetGrandpa(source, target) << endl;
+    cout << GetGrandpa(source, target) << endl;
 }
 
 void Repository::CreateRepository(const string s) {

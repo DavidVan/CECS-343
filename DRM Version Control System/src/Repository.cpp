@@ -164,17 +164,17 @@ void Repository::Merge(string source, string target, string manifestVersion) {
                 targetDirectory = targetPath.substr(0, directoryCutOffLocation);
                 filesystem::create_directories(targetDirectory); // Make sure the directory exists by making it.
                 if (!filesystem::exists(targetPath)) { // If the file does not exist, copy it over.
-                    filesystem::copy_file(sourcePath, targetPath, filesystem::copy_options::overwrite_existing);
+                    //filesystem::copy_file(sourcePath, targetPath, filesystem::copy_options::overwrite_existing);
                 }
                 else { // There was a version of it already... Check for conflicts.
                     if (CheckSum(sourcePath).compare(CheckSum(targetPath)) != 0) { // They are NOT the same file. It was changed...
                         string file_MT = targetPath.substr(0, targetPath.find(".")) + "_MT" + targetPath.substr(targetPath.find("."));
-                        string file_MR = sourcePath.substr(0, sourcePath.find(".")) + "_MR" + sourcePath.substr(sourcePath.find("."));
+                        string file_MR = targetPath.substr(0, targetPath.find(".")) + "_MR" + targetPath.substr(targetPath.find("."));
                         string grandpaFile = ""; // Still needs work. Need to get grandpa artifact path.
                         string file_MG = ""; // Then give artifact a name. The path has to be to the target folder.
-                        filesystem::rename(targetPath, file_MT); // File from tree
-                        filesystem::copy_file(sourcePath, file_MR, filesystem::copy_options::overwrite_existing); // File from source repo
-                        filesystem::copy_file(grandpaFile, file_MG, filesystem::copy_options::overwrite_existing); // File from common mom/grandpa
+                        //filesystem::rename(targetPath, file_MT); // File from tree
+                        //filesystem::copy_file(sourcePath, file_MR, filesystem::copy_options::overwrite_existing); // File from source repo
+                        //filesystem::copy_file(grandpaFile, file_MG, filesystem::copy_options::overwrite_existing); // File from common mom/grandpa
                     }
                 }
             }

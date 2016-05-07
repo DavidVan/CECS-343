@@ -159,7 +159,7 @@ Merge will simply supply the files needed for merging, but won't do any actual m
 @param source = repository path
 @param target = ptree location
 @param manifestVersion = manifest file name from source
-Complex Lines:
+Complex Lines: ~20
 */
 void Repository::Merge(string source, string target, string manifestVersion) {
     if (target == "") {

@@ -172,8 +172,8 @@ void Repository::Merge(string source, string target, string manifestVersion) {
                         string file_MR = ""; // Find a way to change, for example, C:\test\test.txt to C:\test\test_MR.txt
                         // Get the grandpa file.
                         string file_MG = ""; // Find a way to change, for example, C:\test\test.txt to C:\test\test_MG.txt
-                        filesystem::copy_file(targetPath, file_MT, filesystem::copy_options::overwrite_existing); // File from source repo
-                        filesystem::copy_file(sourcePath, file_MR, filesystem::copy_options::overwrite_existing); // File from tree
+                        filesystem::rename(targetPath, file_MT); // File from source repo
+                        filesystem::rename(sourcePath, file_MR); // File from tree
                         filesystem::copy_file(sourcePath, file_MG, filesystem::copy_options::overwrite_existing); // File from common mom/grandpa
                     }
                 }

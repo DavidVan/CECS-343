@@ -205,7 +205,6 @@ void Repository::Merge(string source, string target, string manifestVersion) {
         }
     }
     input.close();
-    cout << GetGrandpa(source, target) << endl;
 }
 
 void Repository::CreateRepository(const string s) {

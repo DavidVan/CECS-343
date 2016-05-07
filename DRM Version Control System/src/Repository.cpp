@@ -169,11 +169,12 @@ void Repository::Merge(string source, string target, string manifestVersion) {
                     if (CheckSum(sourcePath).compare(CheckSum(targetPath)) != 0) { // They are NOT the same file. It was changed...
                         string file_MT = ""; // Find a way to change, for example, C:\test\test.txt to C:\test\test_MT.txt
                         string file_MR = ""; // Find a way to change, for example, C:\test\test.txt to C:\test\test_MR.txt
-                        // Get the grandpa file.
+                        // Get the grandpa file (the path to the artifact!).
+                        string grandpaFile = "";
                         string file_MG = ""; // Find a way to change, for example, C:\test\test.txt to C:\test\test_MG.txt
                         filesystem::rename(targetPath, file_MT); // File from source repo
-                        filesystem::rename(sourcePath, file_MR); // File from tree
-                        filesystem::copy_file(sourcePath, file_MG, filesystem::copy_options::overwrite_existing); // File from common mom/grandpa
+                        filesystem::copy_file(sourcePath, file_MR, filesystem::copy_options::overwrite_existing); // File from tree
+                        filesystem::copy_file(grandpaFile, file_MG, filesystem::copy_options::overwrite_existing); // File from common mom/grandpa
                     }
                 }
             }

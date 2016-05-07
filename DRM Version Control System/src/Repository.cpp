@@ -4,7 +4,6 @@
 #include <fstream>
 #include <vector>
 #include <string>
-#include <deque>
 #include <experimental\filesystem>
 #include "Repository.h"
 
@@ -364,6 +363,7 @@ const string Repository::GetPreviousManifest(string repopath) const {
         }
         return (previous == "0" ? "none" : (previous + ".txt"));
     }
+    return "";
 }
 /*
 Retrieves the latest manifest file with the manifest folder as the parameter
@@ -470,6 +470,7 @@ const string Repository::GetGrandpa(string src, string target) const {
             latestTargetManifest = GetPreviousManifest(latestTargetManifest); //Target the previous manifest by reading it from the manifest file.
         }
     }
+    return "";
 }
 // Given only the string representation of two manifest's file paths, this will compare the manifest names.
 // will return 1 if m1 is later than m2, -1 if m2 is later than m1, and 0 if they are the same.

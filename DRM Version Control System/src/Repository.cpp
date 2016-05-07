@@ -18,7 +18,10 @@ Repository::Repository() : mRepositoryFolderName("repo343") {
 Repository::~Repository() {
 
 }
-
+/*
+Creates a repo343 folder, manifests subfolder and an initial manifest in the current directory
+Complex Lines: 1
+*/
 void Repository::Initialize() {
     if (filesystem::exists(mRepositoryFolderName)) {
         cout << "Repository already exists. Updating manifests. This will be changed later." << endl;
@@ -30,7 +33,10 @@ void Repository::Initialize() {
     CreateProjectTree(filesystem::current_path().string());
     CreateManifest(filesystem::current_path().string(), mRepositoryFolderName, "");
 }
-
+/*
+Updates the manifest in the repository.
+Complex Lines: 0
+*/
 void Repository::Update() {
     cout << "Updating repository." << endl;
     CreateProjectTree(filesystem::current_path().string());
@@ -38,13 +44,15 @@ void Repository::Update() {
 }
 
 /*
-@Param: source = project tree folder ; target = repository folder
 check in will update repository folder with new files/folders from the project tree directory.
 Manifest will be updated as well.
+@param source = project tree folder 
+@param target = repository folder
+Complex Lines: 21
 */
 void Repository::CheckIn(string source, string target) {
     if (target == "") {
-        target = filesystem::current_path().string() + "\\" + mRepositoryFolderName;
+        target = filesystem::current_path().string() + "\\" + mRepositoryFolderName; //having no target parameter will use current directory's repo folder as default.
     }
     for (auto &p : filesystem::recursive_directory_iterator(source)) { // Go through the project tree folder and check for updated/new files.
         string  filePath = p.path().string();
@@ -86,10 +94,15 @@ void Repository::CheckIn(string source, string target) {
     CreateManifest(source, target, "# Check In Location: " + target); // updates manifest file
     cout << "Check-In completed." << endl;
 }
-
+/*
+Checks out a repository to a new project tree location
+@param source = the repository you want to checkout from 
+@param target = the location you want the new ptree to be placed.
+Complex Lines: 18
+*/
 void Repository::CheckOut(string source, string target, string manifestVersion) {
     if (source == "") {
-        source = filesystem::current_path().string() + "\\" + mRepositoryFolderName;
+        source = filesystem::current_path().string() + "\\" + mRepositoryFolderName; //will use current directory as default source if none is provided
     }
     if (!filesystem::exists(source) || !filesystem::is_directory(source)) {
         cout << "Source doesn't exist or is not a directory." << endl;
@@ -107,7 +120,7 @@ void Repository::CheckOut(string source, string target, string manifestVersion) 
         return;
     }
     cout << "Manifest Location: " << manifestLocation << endl;
-    ifstream input(manifestLocation);
+    ifstream input(manifestLocation); //opens an input file stream for reading the manifest file.
     filesystem::create_directories(target);
     while (getline(input, line))
     {
@@ -127,7 +140,7 @@ void Repository::CheckOut(string source, string target, string manifestVersion) 
     }
     input.close();
     // End reading
-    string newManifestLocation = target + "\\" + mRepositoryFolderName + "\\manifests\\" + manifestVersion + ".txt";
+    string newManifestLocation = target + "\\" + mRepositoryFolderName + "\\manifests\\" + manifestVersion + ".txt"; //the location where the new manifest will be placed
     if (!filesystem::exists(newManifestLocation)) {
         int directoryCutOffLocation = newManifestLocation.length() + (newManifestLocation.find_last_of("\\") - newManifestLocation.length());
         string manifestDirectory = newManifestLocation.substr(0, directoryCutOffLocation);
@@ -135,15 +148,18 @@ void Repository::CheckOut(string source, string target, string manifestVersion) 
         filesystem::copy_file(manifestLocation, newManifestLocation, filesystem::copy_options::overwrite_existing); //copying source manifest to target manifest if not exists
     }
     CreateProjectTree(target);
-    CreateManifest(target, target + "\\" + mRepositoryFolderName, "@ Previous Project Tree Location: " + source);
+    CreateManifest(target, target + "\\" + mRepositoryFolderName, "@ Previous Project Tree Location: " + source); //writes the previous ptree location for reference.
     cout << endl;
 }
 
 /*
-@Param: source = repository path , target = ptree location, manifestVersion = manifest file name from source
 Merge the changes of a repository's version to a project tree using the specified manifest.
 If no target is specified, it will assume target is the current directory (CD'ed location).
 Merge will simply supply the files needed for merging, but won't do any actual merging.
+@param source = repository path 
+@param target = ptree location
+@param manifestVersion = manifest file name from source
+Complex Lines: 
 */
 void Repository::Merge(string source, string target, string manifestVersion) {
     if (target == "") {
@@ -207,13 +223,24 @@ void Repository::Merge(string source, string target, string manifestVersion) {
     input.close();
 }
 
+/*
+Creates a repository folder based on the name passed in the param. Will also create the manifests subfolder.
+@param s = Repository folder name. (cecs343)
+Complex Lines: 1
+*/
 void Repository::CreateRepository(const string s) {
     // Create the directory.
     filesystem::create_directory(s);
     // Create the manifest.
     filesystem::create_directory(s + "\\manifests");
 }
-
+/*
+Creates the project tree structure in the repository folder. 
+Subfolders will be created for each file in the project tree and
+in the subfolders will be the artifacts of the files. 
+@param path = path of the project tree folder.
+Complex Lines: 
+*/
 void Repository::CreateProjectTree(string path) const {
 
     filesystem::path currentPath = path;
@@ -239,6 +266,11 @@ void Repository::CreateProjectTree(string path) const {
     }
 }
 
+/*
+Creates a manifest file in the manifest repository
+@param words = used if you want to add a custom string in the manifest file.
+Complex Lines: 15
+*/
 void Repository::CreateManifest(string directory, string repoPath, string words) const {
     const vector<string> date = DateStamp();
     string dateString = date[1];
@@ -268,14 +300,18 @@ void Repository::CreateManifest(string directory, string repoPath, string words)
     output.close();
 }
 
+//Calculates checksum of a file.
+//Complex Lines: 2
 const string Repository::CheckSum(const string path) const {
     filesystem::path p = filesystem::canonical(path);
     return to_string(filesystem::file_size(p) % 256);
 }
 
-
+/* 
+Returns a vector of the date stamp. This vector contains the date, time, and the full date and time as strings. 
+Complex Lines: 9
+*/
 const vector<string> Repository::DateStamp() const {
-    // Grab date/time.  
     vector<std::string> date;
     time_t time = chrono::system_clock::to_time_t(chrono::system_clock::now());
     tm *clock = localtime(&time);
@@ -296,7 +332,12 @@ const vector<string> Repository::DateStamp() const {
     return date;
 }
 
-//Retrieves the name of the previous manifest file in the given repopath.
+/*
+If a manifest file is passed in, it will read and return the previous manifest from the man file.
+If a directory of a repo is given, it will return the 2nd to last repo in that folder. This is used for writing 
+the previous manifest in the manifest files
+Complex Lines: 12
+*/
 const string Repository::GetPreviousManifest(string repopath) const {
     if (repopath.find(".txt") != string::npos) { // A file name was passed in instead.
         string line;
@@ -324,8 +365,10 @@ const string Repository::GetPreviousManifest(string repopath) const {
         return (previous == "0" ? "none" : (previous + ".txt"));
     }
 }
-
-/*Retrieves the latest manifest file with the manifest folder as the parameter*/
+/*
+Retrieves the latest manifest file with the manifest folder as the parameter
+Complex Lines: 3
+*/
 const string Repository::GetLatestManifest(string manifestfolder) const {
     string latest = "none";
     for (auto& p : filesystem::directory_iterator(manifestfolder)) {
@@ -336,8 +379,9 @@ const string Repository::GetLatestManifest(string manifestfolder) const {
 }
 
 /*
-**This retrieves the path relative to the the repo folder.
-**From C:\\..\ptree\example , will return C:\\..\repo\example
+This retrieves the path relative to the the repo folder.
+From C:\\..\ptree\example , will return C:\\..\repo\example
+Complex Lines: 2
 */
 const string Repository::GetRepositoryPath(string ptreepath, string repopath, string filePath) const {
     filesystem::path ptree = ptreepath;
@@ -347,8 +391,10 @@ const string Repository::GetRepositoryPath(string ptreepath, string repopath, st
     return finalPath;
 }
 
-// Cuts off path. Example: C:\Projects\ProjectTree\File.txt -> \File.txt
-// Pass in "C:\Projects\ProjectTree" as rootPath and "C:\Projects\ProjectTree\File.txt" as filePath
+/* 
+Cuts off path. Example: C:\Projects\ProjectTree\File.txt -> \File.txt
+Pass in "C:\Projects\ProjectTree" as rootPath and "C:\Projects\ProjectTree\File.txt" as filePath
+*/
 const string Repository::GetFileLocation(string rootPath, string filePath) const {
     filesystem::path path = rootPath;
     string directory = path.filename().string();
@@ -359,6 +405,7 @@ const string Repository::GetFileLocation(string rootPath, string filePath) const
 
 // Given the path to the manifest folder or manifest file, finds and returns the path to the
 // previous project tree location (where it was checked out from) if any.
+// Complex Lines: 4
 const string Repository::GetPreviousProjectTreeLocation(string previousManifest) const {
     string line;
     if (previousManifest.find(".txt") == string::npos) { // A folder was passed in.
@@ -386,9 +433,15 @@ const string Repository::GetPreviousProjectTreeLocation(string previousManifest)
 }
 
 /**
+<<<<<<< Updated upstream
 Retrieves the "grandpa" file location of the repo and the given project tree.
 @Param: src , target = directories that you want to find the grandpa file of.
 complex lines =
+=======
+ Retrieves the "grandpa" file location of the repo and the given project tree.
+ @Param: src , target = directories that you want to find the grandpa file of.
+ complex lines = 9
+>>>>>>> Stashed changes
 **/
 const string Repository::GetGrandpa(string src, string target) const {
     string manipath = "\\repo343\\manifests";
@@ -424,9 +477,9 @@ const string Repository::GetGrandpa(string src, string target) const {
         }
     }
 }
-//Given only the string representation of two manifest's file paths, this will compare the manifest names.
-//will return 1 if m1 is later than m2, -1 if m2 is later than m1, and 0 if they are the same.
-//complex lines = 5
+// Given only the string representation of two manifest's file paths, this will compare the manifest names.
+// will return 1 if m1 is later than m2, -1 if m2 is later than m1, and 0 if they are the same.
+// complex lines = 5
 const int Repository::CompareManifestName(string m1, string m2) const {
     filesystem::path manifest1 = m1;
     filesystem::path manifest2 = m2;

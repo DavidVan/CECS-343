@@ -83,7 +83,8 @@ void Repository::CheckIn(string src, string target) {
             }
         }
     }
-    CreateManifest(filesystem::current_path().string(), target, "# Check In Location: " + target); // updates manifest file
+    CreateManifest(src, target, "# Check In Location: " + target); // updates manifest file
+	cout << "Check-In completed." << endl;
 }
 
 void Repository::CheckOut(string src, string target, string manFileName) {
@@ -133,7 +134,7 @@ void Repository::CheckOut(string src, string target, string manFileName) {
         filesystem::create_directories(manifestDirectory);
 		filesystem::copy_file(manifestLocation, newManifestLocation, filesystem::copy_options::overwrite_existing); //copying source manifest to target manifest if not exists
 	}
-    CreateManifest(target, target + "\\" + mRepositoryFolderName, "@ Previous Project Tree Location: " + filesystem::current_path().string());
+    CreateManifest(target, target + "\\" + mRepositoryFolderName, "@ Previous Project Tree Location: " + src);
     cout << endl;
 }
 
@@ -144,7 +145,7 @@ If no target is specified, it will assume target is the current directory (CD'ed
 Merge will simply supply the files needed for merging, but won't do any actual merging.
 */
 void Repository::Merge(string src, string target, string manFileName) {
-
+	cout << GetGrandpa(src, target) << endl;
 }
 
 void Repository::CreateRepository(const string s) {
@@ -238,18 +239,31 @@ const vector<string> Repository::DateStamp() const {
 
 //Retrieves the name of the previous manifest file in the given repopath.
 const string Repository::GetPreviousManifest(string repopath) const {
-    string latest = "0";
-    string previous = "";
-    for (auto& p : filesystem::directory_iterator(repopath + "\\manifests\\")) {
-        string file = p.path().filename().string();
-        int cutOffLocation = file.find(".");
-        file = file.substr(0, cutOffLocation);
-        if (atoll(file.c_str()) > atoll(latest.c_str())) {
-            previous = latest;
-            latest = file;
-        }
-    }
-    return (previous == "0" ? "none" : (previous + ".txt"));
+	if (repopath.find(".txt") != string::npos) { // A file name was passed in instead.
+		string line;
+		filesystem::path p = repopath;
+		ifstream input(repopath);
+		while (getline(input, line)) {
+			if (line.substr(0, 21).compare("# Previous Manifest: ") == 0) {
+				return p.parent_path().string()+"\\"+line.substr(line.find_first_of(":") + 2); // The result!
+			}
+		}
+		input.close();
+	}
+	else {
+		string latest = "0";
+		string previous = "";
+		for (auto& p : filesystem::directory_iterator(repopath + "\\manifests\\")) {
+			string file = p.path().filename().string();
+			int cutOffLocation = file.find(".");
+			file = file.substr(0, cutOffLocation);
+			if (atoll(file.c_str()) > atoll(latest.c_str())) {
+				previous = latest;
+				latest = file;
+			}
+		}
+		return (previous == "0" ? "none" : (previous + ".txt"));
+	}
 }
 /*Retrieves the latest manifest file with the manifest folder as the parameter*/
 const string Repository::GetLatestManifest(string manifestfolder) const {
@@ -259,9 +273,6 @@ const string Repository::GetLatestManifest(string manifestfolder) const {
 		latest = p.path().filename().string();
 	}
 	return latest;
-}
-const string Repository::ReadPrevManifest(string manfile) const{
-	return "";
 }
 
 /*
@@ -314,59 +325,61 @@ const string Repository::GetPreviousProjectTreeLocation(string previousManifest)
     return ""; // Empty string.
 }
 
-// Retrieves the "grandpa" file location of the repo and the given project tree. 
+/** 
+ Retrieves the "grandpa" file location of the repo and the given project tree. 
+ @Param: src , target = directories that you want to find the grandpa file of.
+ complex lines = 
+**/
 const  string Repository::GetGrandpa(string src, string target)const{
-	string manipath= "//repo343//manifests";
-	string currentSrc = src + manipath;
-	string currentTarget = target + manipath;
+	string manipath= "\\repo343\\manifests";
+	string currentSrc = src + manipath;	//current source directory
+	string currentTarget = target + manipath; //current target directory
 
-	string latestSrcManifest = GetLatestManifest(currentSrc);
-	string latestTargetManifest = GetLatestManifest(currentTarget);
+	string latestSrcManifest = currentSrc+"\\"+GetLatestManifest(currentSrc);	//initialize with latest manifest file in currentSrc
+	string latestTargetManifest = currentTarget+"\\"+GetLatestManifest(currentTarget); //initilize with latest manifest file in currentTarget
 
+	//will keep looping until both directories hit the end of their trees.
 	while (GetPreviousProjectTreeLocation(currentSrc) != "none" && GetPreviousProjectTreeLocation(currentTarget) != "none") {
-		if (latestSrcManifest.compare(latestTargetManifest) == 0) {
-			//return latestSrcManifest.filename();
+		if (CompareManifestName(latestSrcManifest, latestTargetManifest)==0) { //if you find two of the same manifests name, you found grandpa.
+			return latestSrcManifest;
 		}
-		if (latestSrcManifest == "none" && latestTargetManifest != "none") {
-			//latestSrc = GetLatestManifest(src + manipath);
-			//latestTarget = ReadPrevManifest(currentSrc);
+		//if you come across a file in src that has a previous project tree location line, 
+		//switch currentSrc to the previous ptree & update latestSrcManifest in that src location.
+		if (GetPreviousProjectTreeLocation(latestSrcManifest) != "" && GetPreviousProjectTreeLocation(latestTargetManifest) == "") {
+			currentSrc = GetPreviousProjectTreeLocation(latestSrcManifest)+"\\manifests";
+			latestTargetManifest = currentSrc + "\\" + GetLatestManifest(currentSrc);
 		}
-		if (latestTargetManifest == "none" && latestSrcManifest != "none") {
-			latestTargetManifest = GetLatestManifest(target + manipath);
-			//latestSrcManifest = ReadPrevManifest();
-
+		//same with target
+		else if (GetPreviousProjectTreeLocation(latestSrcManifest) == "" && GetPreviousProjectTreeLocation(latestTargetManifest) != "") {
+			currentTarget = GetPreviousProjectTreeLocation(latestTargetManifest)+"\\manifests";
+			latestTargetManifest = currentTarget + "\\" + GetLatestManifest(currentTarget);
+		}
+		//src manifest is later than target manifest
+		if (CompareManifestName(latestSrcManifest, latestTargetManifest) == 1) { 
+			latestSrcManifest = GetPreviousManifest(latestSrcManifest);	//Target the previous manifest by reading it from the manifest file.
+		}
+		//target manifest is later than src manifest
+		if (CompareManifestName(latestSrcManifest, latestTargetManifest) == -1) { 
+			latestTargetManifest = GetPreviousManifest(latestTargetManifest); //Target the previous manifest by reading it from the manifest file.
 		}
 	}
-	/* PSEUDOCODE
-	initialize curSrcLocation (will change when it hits end of man dir) and curTargetLocation
-	initialize latestsrc & latesttarget(helper method will be made for this)
-	while repo's  && ptree's previous ptree location != "none" && their getPrevManFile!= "none")
-		create full length paths for latestsrc and latesttarget
-		if latestsrc == latesttarget
-			return latestsrc (path)
+}
+//Given only the string representation of two manifest's file paths, this will compare the manifest names.
+//will return 1 if m1 is later than m2, -1 if m2 is later than m1, and 0 if they are the same.
+//complex lines = 5
+const int Repository::CompareManifestName(string m1, string m2) const{
+	filesystem::path manifest1 = m1;
+	filesystem::path manifest2 = m2;
 
-		if latestsrc == "none" && latestarget != "none"
-			reset latestsrc = getlatestmanfile (src)
-			latesttarget = getprevmanfile (latesttarget)
-		else if (latestsrc !=none && latesttarget =="none")
-			reset latesttarget = getlatestmanfile (target)
-			latestsrs = getprevmanfile (latestsrc)
-
-		if latestsrc > latesttarget
-			if (getPrevPtreeLoc (latestsrc) !=none)
-				curSrcLocation = getPrevPtreeLoc (latestsrc)
-				latestsrc = getlatestmanfile (curSrcLocation)
-			else
-				latestscc = getpreviousmanifest(latestsrc full path)
-
-		if latestsrc < latesttarget
-			if (getPrevPtreeLoc (latesttarget) !=none)
-				curTargetLocation = getPrevPtreeLoc (latesttarget)
-				latestTarget = getlatestmanfile (curTargetLocation)
-			else
-				latestTarget = getpreviousmanifest(latestTarget full path)
-
-	*/
-	
-	return "grandpapath";
+	string filename1 = manifest1.filename().string();
+	int cutOffLocation = filename1.find(".");
+	filename1 = filename1.substr(0, cutOffLocation);
+	string filename2 = manifest2.filename().string().substr(0, cutOffLocation);
+	if (atoll(filename1.c_str()) == atoll(filename2.c_str())) {
+		return 0;
+	}
+	else if (atoll(filename1.c_str()) > atoll(filename2.c_str())) {
+		return 1;
+	}
+	else return -1;
 }

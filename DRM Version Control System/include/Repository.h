@@ -20,11 +20,11 @@ private:
     const std::vector<std::string> DateStamp() const;
     const std::string GetPreviousManifest(std::string) const;
 	const std::string GetLatestManifest(std::string) const;
-	const std::string ReadPrevManifest(std::string) const;
     const std::string GetRepositoryPath(std::string, std::string, std::string) const;
     const std::string GetFileLocation(std::string, std::string) const;
     const std::string GetPreviousProjectTreeLocation(std::string) const;
 	const std::string GetGrandpa(std::string, std::string) const;
+	const int CompareManifestName(std::string, std::string) const;
 
 public:
     Repository();

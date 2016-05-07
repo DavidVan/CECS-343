@@ -145,7 +145,11 @@ If no target is specified, it will assume target is the current directory (CD'ed
 Merge will simply supply the files needed for merging, but won't do any actual merging.
 */
 void Repository::Merge(string src, string target, string manFileName) {
-    cout << GetGrandpa(src, target) << endl;
+    << << << < HEAD
+        cout << GetGrandpa(src, target) << endl;
+    == == == =
+        cout << GetGrandpa(src, target) << endl;
+    >> >> >> > a3213531cb75a60e76212398594bd960e02244a1
 }
 
 void Repository::CreateRepository(const string s) {
@@ -239,7 +243,7 @@ const vector<string> Repository::DateStamp() const {
 
 //Retrieves the name of the previous manifest file in the given repopath.
 const string Repository::GetPreviousManifest(string repopath) const {
-    if (repopath.find(".txt") != string::npos) { // A file name was passed in instead.
+    if (repopath.find(".txt") != string::npos) { // A folder was passed in.
         string line;
         filesystem::path p = repopath;
         ifstream input(repopath);
@@ -250,7 +254,7 @@ const string Repository::GetPreviousManifest(string repopath) const {
         }
         input.close();
     }
-    else {
+    else { // A file name was passed in instead.
         string latest = "0";
         string previous = "";
         for (auto& p : filesystem::directory_iterator(repopath + "\\manifests\\")) {

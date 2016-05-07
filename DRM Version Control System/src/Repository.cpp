@@ -46,7 +46,7 @@ void Repository::Update() {
 /*
 check in will update repository folder with new files/folders from the project tree directory.
 Manifest will be updated as well.
-@param source = project tree folder 
+@param source = project tree folder
 @param target = repository folder
 Complex Lines: 21
 */
@@ -96,7 +96,7 @@ void Repository::CheckIn(string source, string target) {
 }
 /*
 Checks out a repository to a new project tree location
-@param source = the repository you want to checkout from 
+@param source = the repository you want to checkout from
 @param target = the location you want the new ptree to be placed.
 Complex Lines: 18
 */
@@ -156,10 +156,10 @@ void Repository::CheckOut(string source, string target, string manifestVersion) 
 Merge the changes of a repository's version to a project tree using the specified manifest.
 If no target is specified, it will assume target is the current directory (CD'ed location).
 Merge will simply supply the files needed for merging, but won't do any actual merging.
-@param source = repository path 
+@param source = repository path
 @param target = ptree location
 @param manifestVersion = manifest file name from source
-Complex Lines: 
+Complex Lines:
 */
 void Repository::Merge(string source, string target, string manifestVersion) {
     if (target == "") {
@@ -235,11 +235,11 @@ void Repository::CreateRepository(const string s) {
     filesystem::create_directory(s + "\\manifests");
 }
 /*
-Creates the project tree structure in the repository folder. 
+Creates the project tree structure in the repository folder.
 Subfolders will be created for each file in the project tree and
-in the subfolders will be the artifacts of the files. 
+in the subfolders will be the artifacts of the files.
 @param path = path of the project tree folder.
-Complex Lines: 
+Complex Lines:
 */
 void Repository::CreateProjectTree(string path) const {
 
@@ -307,8 +307,8 @@ const string Repository::CheckSum(const string path) const {
     return to_string(filesystem::file_size(p) % 256);
 }
 
-/* 
-Returns a vector of the date stamp. This vector contains the date, time, and the full date and time as strings. 
+/*
+Returns a vector of the date stamp. This vector contains the date, time, and the full date and time as strings.
 Complex Lines: 9
 */
 const vector<string> Repository::DateStamp() const {
@@ -334,7 +334,7 @@ const vector<string> Repository::DateStamp() const {
 
 /*
 If a manifest file is passed in, it will read and return the previous manifest from the man file.
-If a directory of a repo is given, it will return the 2nd to last repo in that folder. This is used for writing 
+If a directory of a repo is given, it will return the 2nd to last repo in that folder. This is used for writing
 the previous manifest in the manifest files
 Complex Lines: 12
 */
@@ -391,7 +391,7 @@ const string Repository::GetRepositoryPath(string ptreepath, string repopath, st
     return finalPath;
 }
 
-/* 
+/*
 Cuts off path. Example: C:\Projects\ProjectTree\File.txt -> \File.txt
 Pass in "C:\Projects\ProjectTree" as rootPath and "C:\Projects\ProjectTree\File.txt" as filePath
 */

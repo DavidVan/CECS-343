@@ -170,7 +170,22 @@ void Repository::Merge(string source, string target, string manifestVersion) {
                     if (CheckSum(sourcePath).compare(CheckSum(targetPath)) != 0) { // They are NOT the same file. It was changed...
                         string file_MT = targetPath.substr(0, targetPath.find(".")) + "_MT" + targetPath.substr(targetPath.find("."));
                         string file_MR = targetPath.substr(0, targetPath.find(".")) + "_MR" + targetPath.substr(targetPath.find("."));
+                        filesystem::path tempPath = source;
+                        string grandpaManifest = GetGrandpa(tempPath.parent_path().string(), target);
                         string grandpaFile = ""; // Still needs work. Need to get grandpa artifact path.
+                        string anotherLine = "";
+                        ifstream anotherInput(grandpaManifest);
+                        while (getline(anotherInput, anotherLine))
+                        {
+                            if (anotherLine.substr(0, 1).compare("#") != 0 && anotherLine.substr(0, 1).compare("@") != 0) { // Tries to find "#" or "@" at the beginning of a line. We need to find non-"#/@" containing lines to extract the paths.
+                                string test = line;
+                                if ((anotherLine.find(line) != string::npos) /* <-- needs work */ && (anotherLine.find("Artifact ID") != string::npos) && (anotherLine.find("\\") != string::npos)) { // Found a line containing paths to files.
+                                    int cutOffLocation = line.find(" | ") - line.find("\\"); // Needed to cut off " | Artifact ID: ~~~~"... We find the location of " | " and then the location of the first "\", and subtract them.
+                                    grandpaFile = source + line.substr(line.find("\\"), cutOffLocation) + "\\" + line.substr(line.find_last_of(" ") + 1);
+                                }
+                            }
+                        }
+                        anotherInput.close();
                         string file_MG = ""; // Then give artifact a name. The path has to be to the target folder.
                         //filesystem::rename(targetPath, file_MT); // File from tree
                         //filesystem::copy_file(sourcePath, file_MR, filesystem::copy_options::overwrite_existing); // File from source repo
@@ -275,7 +290,7 @@ const vector<string> Repository::DateStamp() const {
 
 //Retrieves the name of the previous manifest file in the given repopath.
 const string Repository::GetPreviousManifest(string repopath) const {
-    if (repopath.find(".txt") != string::npos) { // A folder was passed in.
+    if (repopath.find(".txt") != string::npos) { // A file name was passed in instead.
         string line;
         filesystem::path p = repopath;
         ifstream input(repopath);
@@ -286,7 +301,7 @@ const string Repository::GetPreviousManifest(string repopath) const {
         }
         input.close();
     }
-    else { // A file name was passed in instead.
+    else {
         string latest = "0";
         string previous = "";
         for (auto& p : filesystem::directory_iterator(repopath + "\\manifests\\")) {
@@ -301,6 +316,7 @@ const string Repository::GetPreviousManifest(string repopath) const {
         return (previous == "0" ? "none" : (previous + ".txt"));
     }
 }
+
 /*Retrieves the latest manifest file with the manifest folder as the parameter*/
 const string Repository::GetLatestManifest(string manifestfolder) const {
     string latest = "none";
@@ -366,7 +382,7 @@ Retrieves the "grandpa" file location of the repo and the given project tree.
 @Param: src , target = directories that you want to find the grandpa file of.
 complex lines =
 **/
-const  string Repository::GetGrandpa(string src, string target)const {
+const string Repository::GetGrandpa(string src, string target) const {
     string manipath = "\\repo343\\manifests";
     string currentSrc = src + manipath;	//current source directory
     string currentTarget = target + manipath; //current target directory

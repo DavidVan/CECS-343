@@ -239,7 +239,7 @@ const vector<string> Repository::DateStamp() const {
 
 //Retrieves the name of the previous manifest file in the given repopath.
 const string Repository::GetPreviousManifest(string repopath) const {
-    if (repopath.find(".txt") != string::npos) { // A folder was passed in.
+    if (repopath.find(".txt") != string::npos) { // A file name was passed in instead.
         string line;
         filesystem::path p = repopath;
         ifstream input(repopath);
@@ -250,7 +250,7 @@ const string Repository::GetPreviousManifest(string repopath) const {
         }
         input.close();
     }
-    else { // A file name was passed in instead.
+    else {
         string latest = "0";
         string previous = "";
         for (auto& p : filesystem::directory_iterator(repopath + "\\manifests\\")) {

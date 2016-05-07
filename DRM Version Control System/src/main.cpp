@@ -52,6 +52,9 @@ void runCommand(int argc, char* argv[], Repository* repository) {
     else if (string(argv[1]) == "help") {
         commandList();
     }
+	else if (string(argv[1]) == "grandpa") {
+		repository->Merge(argv[2], argv[3], argv[4]);
+	}
     else {
         commandList();
     }

@@ -238,7 +238,7 @@ Creates the project tree structure in the repository folder.
 Subfolders will be created for each file in the project tree and
 in the subfolders will be the artifacts of the files.
 @param path = path of the project tree folder.
-Complex Lines:
+Complex Lines: 3
 */
 void Repository::CreateProjectTree(string path) const {
 

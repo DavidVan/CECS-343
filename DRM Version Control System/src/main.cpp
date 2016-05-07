@@ -10,6 +10,7 @@ void commandList() {
         "update" << endl <<
         "checkin" << endl <<
         "checkout" << endl <<
+        "merge" << endl <<
         "help" << endl;
 }
 

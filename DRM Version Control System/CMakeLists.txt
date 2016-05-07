@@ -9,7 +9,7 @@ project (${PROJNAME})
 
 # Version Number
 set (DRM_VERSION_MAJOR 0)
-set (DRM_VERSION_MINOR 1)
+set (DRM_VERSION_MINOR 3)
 
 # Set Up Directories
 set (SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)

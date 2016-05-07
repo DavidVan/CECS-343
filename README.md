@@ -1,6 +1,6 @@
 CECS 343, Section 05/06
 
-Project: Version Control System - Phase One
+Project: Version Control System - Phase Three
 
 Project By: Team DRM
 

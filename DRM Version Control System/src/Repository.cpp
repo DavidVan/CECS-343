@@ -433,15 +433,9 @@ const string Repository::GetPreviousProjectTreeLocation(string previousManifest)
 }
 
 /**
-<<<<<<< Updated upstream
-Retrieves the "grandpa" file location of the repo and the given project tree.
-@Param: src , target = directories that you want to find the grandpa file of.
-complex lines =
-=======
  Retrieves the "grandpa" file location of the repo and the given project tree.
  @Param: src , target = directories that you want to find the grandpa file of.
  complex lines = 9
->>>>>>> Stashed changes
 **/
 const string Repository::GetGrandpa(string src, string target) const {
     string manipath = "\\repo343\\manifests";

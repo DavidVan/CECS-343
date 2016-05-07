@@ -43,11 +43,11 @@ OR
 drm merge <updated tree> <version>
 
 Example:
-Check in: drm checkin "C:\Changed Tree" "C:\Original Tree"
+Check in: drm checkin "C:\\Original Tree" "C:\\Changed Tree\\repo343"
 
-Check out: drm checkout "C:\Original Tree" "C:\New Tree" "20160504201929"
+Check out: drm checkout "C:\\Original Tree\\repo343" "C:\\New Tree" "20160504201929"
 
-Merge: drm merge "C:\Changed Tree" "C:\New Tree" "20160504201950"
+Merge: drm merge "C:\\Changed Tree\\repo343" "C:\\New Tree" "20160504201950"
 
 --------------------------------------------------------------------------------
 

@@ -220,7 +220,7 @@ void Repository::Merge(string source, string target, string manifestVersion) {
         }
     }
     input.close();
-    cout << "Merge Complete." << endl;
+    cout << "Merge Completed." << endl;
 }
 
 /*

@@ -454,7 +454,7 @@ const string Repository::GetGrandpa(string src, string target) const {
         //switch currentSrc to the previous ptree & update latestSrcManifest in that src location.
         if (GetPreviousProjectTreeLocation(latestSrcManifest) != "" && GetPreviousProjectTreeLocation(latestTargetManifest) == "") {
             currentSrc = GetPreviousProjectTreeLocation(latestSrcManifest) + "\\manifests";
-            latestTargetManifest = currentSrc + "\\" + GetLatestManifest(currentSrc);
+            latestSrcManifest = currentSrc + "\\" + GetLatestManifest(currentSrc);
         }
         //same with target
         else if (GetPreviousProjectTreeLocation(latestSrcManifest) == "" && GetPreviousProjectTreeLocation(latestTargetManifest) != "") {
